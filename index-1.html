@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Shift Tracker</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shift Tracker">
+<meta name="theme-color" content="#111318">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ha-bg:             #111318;
+  --ha-card-bg:        #1c1c1e;
+  --ha-card-bg2:       #252529;
+  --ha-border:         rgba(255,255,255,0.06);
+  --ha-divider:        rgba(255,255,255,0.08);
+  --ha-text-primary:   #e1e1e1;
+  --ha-text-secondary: #9da0a8;
+  --ha-text-disabled:  #4a4c52;
+  --ha-accent:         #03a9f4;
+  --ha-accent-dim:     rgba(3,169,244,0.15);
+  --ha-radius:         12px;
+  --ha-radius-sm:      8px;
+
+  --shift-night:       #3d5afe;
+  --shift-night-bg:    rgba(61,90,254,0.12);
+  --shift-day:         #ff8f00;
+  --shift-day-bg:      rgba(255,143,0,0.12);
+  --shift-standby:     #00897B;
+  --shift-standby-bg:  rgba(0,137,123,0.12);
+  --shift-rest:        #43a047;
+  --shift-rest-bg:     rgba(67,160,71,0.12);
+  --shift-home:        #039be5;
+  --shift-home-bg:     rgba(3,155,229,0.12);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: var(--ha-bg);
+  color: var(--ha-text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Onboarding ───────────────────────────────────────────── */
+.onboarding {
+  position: fixed;
+  inset: 0;
+  background: var(--ha-bg);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  animation: fadeIn 0.3s ease;
+}
+.onboarding.hidden { display: none; }
+
+.onboarding-icon { font-size: 52px; margin-bottom: 20px; }
+
+.onboarding-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ha-text-primary);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.onboarding-sub {
+  font-size: 14px;
+  color: var(--ha-text-secondary);
+  text-align: center;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.onboarding-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 12px;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 36px;
+}
+
+.team-btn {
+  background: var(--ha-card-bg);
+  border: 2px solid var(--ha-border);
+  border-radius: var(--ha-radius);
+  color: var(--ha-text-primary);
+  font-size: 24px;
+  font-weight: 700;
+  padding: 22px 0;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-align: center;
+}
+.team-btn.selected {
+  border-color: var(--ha-accent);
+  background: var(--ha-accent-dim);
+  color: var(--ha-accent);
+}
+.team-btn:active { transform: scale(0.94); }
+
+.onboarding-confirm-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--ha-radius);
+  border: none;
+  background: var(--ha-accent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.onboarding-confirm-btn.ready { opacity: 1; }
+
+/* ── App ──────────────────────────────────────────────────── */
+.app {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 16px 14px 48px;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 16px;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ha-text-primary);
+}
+
+.header-sub {
+  font-size: 11px;
+  color: var(--ha-text-secondary);
+  margin-top: 1px;
+}
+
+.header-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ha-text-secondary);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero-card {
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent 60%), var(--ha-card-bg);
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.hero-color-bar {
+  height: 3px;
+  width: 100%;
+  transition: background 0.4s ease;
+}
+
+.shift-Night    .hero-color-bar { background: #3d5afe; }
+.shift-Day      .hero-color-bar { background: #ff8f00; }
+.shift-Standby  .hero-color-bar { background: #00897B; }
+.shift-Rest     .hero-color-bar { background: #43a047; }
+.shift-Home     .hero-color-bar { background: #039be5; }
+
+.hero-body { padding: 20px 20px 0; }
+
+.hero-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 4px;
+}
+
+.hero-status {
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: var(--ha-text-primary);
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+.hero-hours {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: var(--ha-text-secondary);
+  margin-bottom: 18px;
+  min-height: 16px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--ha-divider);
+}
+
+.stat-cell { padding: 14px 20px; }
+.stat-cell:first-child { border-right: 1px solid var(--ha-divider); }
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ha-text-primary);
+}
+
+.stat-value.ticker { animation: tick 2s ease-in-out infinite; }
+@keyframes tick { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  margin-bottom: 12px;
+  background: var(--ha-card-bg);
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  padding: 3px;
+}
+
+.tab {
+  flex: 1;
+  padding: 7px 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--ha-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab.active {
+  background: var(--ha-card-bg2);
+  color: var(--ha-accent);
+}
+
+/* ── Views ────────────────────────────────────────────────── */
+.week-view, .month-view, .search-view { display: none; }
+.week-view.active, .month-view.active, .search-view.active { display: block; }
+
+/* ── Week ─────────────────────────────────────────────────── */
+.week-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.week-scroll::-webkit-scrollbar { display: none; }
+
+.day-card {
+  flex: 0 0 84px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)), var(--ha-card-bg);
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  padding: 12px 8px 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.3s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.day-card.today { border-color: var(--ha-accent); }
+
+.day-card-top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.day-card-Night   .day-card-top-bar { background: #3d5afe; }
+.day-card-Day     .day-card-top-bar { background: #ff8f00; }
+.day-card-Standby .day-card-top-bar { background: #00897B; }
+.day-card-Rest    .day-card-top-bar { background: #43a047; }
+
+.day-dow {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 5px;
+}
+
+.day-num {
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--ha-text-primary);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.day-card.today .day-num { color: var(--ha-accent); }
+
+.day-shift-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.day-card-Night   .day-shift-chip { background: rgba(61,90,254,0.12);   color: #3d5afe; }
+.day-card-Day     .day-shift-chip { background: rgba(255,143,0,0.12);   color: #ff8f00; }
+.day-card-Standby .day-shift-chip { background: rgba(0,137,123,0.12);   color: #00897B; }
+.day-card-Rest    .day-shift-chip { background: rgba(67,160,71,0.12);   color: #43a047; }
+
+.day-hours {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 8px;
+  color: var(--ha-text-secondary);
+  line-height: 1.4;
+}
+
+.today-label {
+  display: inline-block;
+  margin-top: 5px;
+  background: var(--ha-accent-dim);
+  color: var(--ha-accent);
+  border-radius: 20px;
+  padding: 1px 6px;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Month ────────────────────────────────────────────────── */
+.month-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.month-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ha-text-primary);
+}
+
+.nav-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ha-radius-sm);
+  border: 1px solid var(--ha-border);
+  background: var(--ha-card-bg);
+  color: var(--ha-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn:hover  { background: var(--ha-card-bg2); }
+.nav-btn:active { opacity: 0.7; }
+
+.cal-wrap {
+  background: var(--ha-card-bg);
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  overflow: hidden;
+}
+
+.cal-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  border-bottom: 1px solid var(--ha-divider);
+}
+
+.cal-dow {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  padding: 8px 0;
+}
+
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); }
+
+.cal-cell {
+  border-right: 1px solid var(--ha-divider);
+  border-bottom: 1px solid var(--ha-divider);
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 2px;
+  animation: cellIn 0.25s cubic-bezier(.4,0,.2,1) both;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+@keyframes cellIn { from{opacity:0} to{opacity:1} }
+
+.cal-cell-empty   { background: transparent; }
+.cal-cell-Night   { background: rgba(61,90,254,0.12); }
+.cal-cell-Day     { background: rgba(255,143,0,0.12); }
+.cal-cell-Standby { background: rgba(0,137,123,0.12); }
+.cal-cell-Rest    { background: rgba(67,160,71,0.12); }
+
+.cal-num {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ha-text-primary);
+  line-height: 1;
+}
+.cal-cell.is-today .cal-num {
+  background: var(--ha-accent);
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.cal-shift-label {
+  font-size: 7px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.cal-cell-Night   .cal-shift-label { color: #3d5afe; }
+.cal-cell-Day     .cal-shift-label { color: #ff8f00; }
+.cal-cell-Standby .cal-shift-label { color: #00897B; }
+.cal-cell-Rest    .cal-shift-label { color: #43a047; }
+
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--ha-text-secondary);
+}
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ── Search ───────────────────────────────────────────────── */
+.search-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.date-picker {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  background: var(--ha-card-bg);
+  color: var(--ha-text-primary);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-bottom: 12px;
+}
+.date-picker:focus { border-color: var(--ha-accent); }
+
+.result-card {
+  background: var(--ha-card-bg);
+  border-radius: var(--ha-radius);
+  border: 1px solid var(--ha-border);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+.result-color-bar { height: 3px; }
+.result-Night   .result-color-bar { background: #3d5afe; }
+.result-Day     .result-color-bar { background: #ff8f00; }
+.result-Standby .result-color-bar { background: #00897B; }
+.result-Rest    .result-color-bar { background: #43a047; }
+
+.result-body { padding: 20px; }
+.result-date-str {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  margin-bottom: 6px;
+}
+.result-shift-name {
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--ha-text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+.result-divider { height: 1px; background: var(--ha-divider); margin-bottom: 12px; }
+.result-meta { display: flex; align-items: center; justify-content: space-between; }
+.result-meta-label { font-size: 11px; color: var(--ha-text-secondary); }
+.result-meta-value { font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--ha-text-primary); }
+
+/* ── Change team pill ─────────────────────────────────────── */
+.change-team-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--ha-border);
+  background: var(--ha-card-bg2);
+  color: var(--ha-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+.change-team-btn:active { background: var(--ha-border); }
+
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- Onboarding -->
+<div class="onboarding" id="onboarding">
+  <div class="onboarding-icon">⛴️</div>
+  <div class="onboarding-title">Shift Tracker</div>
+  <div class="onboarding-sub">Select your shift team to see your schedule.</div>
+  <div class="onboarding-label">Your Shift Team</div>
+  <div class="team-grid">
+    <button class="team-btn" onclick="selectTeam('A')">A</button>
+    <button class="team-btn" onclick="selectTeam('B')">B</button>
+    <button class="team-btn" onclick="selectTeam('C')">C</button>
+    <button class="team-btn" onclick="selectTeam('D')">D</button>
+  </div>
+  <button class="onboarding-confirm-btn" id="confirmBtn" onclick="confirmTeam()">Let's Go →</button>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+
+  <div class="header">
+    <div>
+      <div class="header-title" id="headerTitle">Shift Tracker</div>
+      <div class="header-sub" id="headerSub"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="header-date" id="headerDate"></div>
+      <button class="change-team-btn" onclick="resetTeam()">Team</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero-card" id="heroCard">
+    <div class="hero-color-bar"></div>
+    <div class="hero-body">
+      <div class="hero-label">Current Status</div>
+      <div class="hero-status" id="heroStatus">--</div>
+      <div class="hero-hours" id="heroHours"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-label" id="cdLabel">Next Change</div>
+        <div class="stat-value ticker" id="countdown">--:--</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Tomorrow</div>
+        <div class="stat-value" id="tomorrowVal">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('week')">Week</button>
+    <button class="tab" onclick="switchTab('month')">Month</button>
+    <button class="tab" onclick="switchTab('search')">Search</button>
+  </div>
+
+  <!-- Week -->
+  <div class="week-view active" id="weekView">
+    <div class="week-scroll" id="weekScroll"></div>
+  </div>
+
+  <!-- Month -->
+  <div class="month-view" id="monthView">
+    <div class="month-nav-row">
+      <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+      <div class="month-title" id="monthTitle"></div>
+      <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-dow-row">
+        <div class="cal-dow">Mo</div><div class="cal-dow">Tu</div>
+        <div class="cal-dow">We</div><div class="cal-dow">Th</div>
+        <div class="cal-dow">Fr</div><div class="cal-dow">Sa</div>
+        <div class="cal-dow">Su</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--shift-night)"></div>Night</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--shift-day)"></div>Day</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--shift-standby)"></div>Standby</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--shift-rest)"></div>Rest</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-view" id="searchView">
+    <div class="search-label">Select a date</div>
+    <input type="date" id="datePicker" class="date-picker" onchange="onDatePick(this.value)">
+    <div id="searchResult"></div>
+  </div>
+
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────
+const ROTATION     = ["Night","Rest","Day","Standby"];
+const REF_DATE     = new Date(2026,1,27); // Feb 27 2026 = Night for Team D
+const DAY_NAMES    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const FULL_DAYS    = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHIFT_HOURS  = { Night:"18:00 – 06:00", Day:"06:00 – 18:00", Standby:"On call 24h", Rest:"Day off" };
+const TEAM_OFFSETS = { D:0, C:1, A:2, B:3 };
+
+let selectedTeam = null;
+let viewMonth    = new Date();
+
+// ── Persistence ──────────────────────────────────────────────
+function getTeam()     { try { return localStorage.getItem('liteTeam'); } catch(e) { return null; } }
+function saveTeam(t)   { try { localStorage.setItem('liteTeam', t); } catch(e) {} }
+function removeTeam()  { try { localStorage.removeItem('liteTeam'); } catch(e) {} }
+
+// ── Shift calc ──────────────────────────────────────────────
+function daysBetween(a,b) {
+  return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) -
+                     Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / 86400000);
+}
+
+function getShiftForDate(date) {
+  const days   = daysBetween(REF_DATE, date);
+  const offset = TEAM_OFFSETS[selectedTeam] ?? 0;
+  let count = 0;
+  if (days >= 0) {
+    for (let i=1; i<=days; i++) {
+      const wd = new Date(REF_DATE.getFullYear(),REF_DATE.getMonth(),REF_DATE.getDate()+i).getDay();
+      if (wd===1||wd===3||wd===5) count++;
+    }
+    return ROTATION[((count + offset) % 4 + 4) % 4];
+  } else {
+    for (let i=1; i<=-days; i++) {
+      const wd = new Date(REF_DATE.getFullYear(),REF_DATE.getMonth(),REF_DATE.getDate()-i).getDay();
+      if (wd===1||wd===3||wd===5) count++;
+    }
+    return ROTATION[(((-count) + offset) % 4 + 4) % 4];
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function today0()     { const d=new Date(); d.setHours(0,0,0,0); return d; }
+function addDays(d,n) { return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n); }
+
+function nextChange(now) {
+  const h    = now.getHours();
+  const next = new Date(now);
+  if (h<6)       { next.setHours(6,0,0,0); }
+  else if (h<18) { next.setHours(18,0,0,0); }
+  else           { next.setDate(next.getDate()+1); next.setHours(6,0,0,0); }
+  return next;
+}
+
+function fmtCountdown(ms) {
+  if (ms<=0) return "00:00:00";
+  const s = Math.floor(ms/1000);
+  return [Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(n=>String(n).padStart(2,'0')).join(':');
+}
+
+// ── Onboarding ───────────────────────────────────────────────
+function selectTeam(team) {
+  selectedTeam = team;
+  document.querySelectorAll('.team-btn').forEach(b =>
+    b.classList.toggle('selected', b.textContent === team));
+  document.getElementById('confirmBtn').classList.add('ready');
+  if (navigator.vibrate) navigator.vibrate(10);
+}
+
+function confirmTeam() {
+  if (!selectedTeam) return;
+  saveTeam(selectedTeam);
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').style.display = '';
+  applyTeam();
+  updateHero();
+  buildWeekView();
+  if (navigator.vibrate) navigator.vibrate([10,40,10]);
+}
+
+function resetTeam() {
+  removeTeam();
+  selectedTeam = null;
+  document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('confirmBtn').classList.remove('ready');
+  document.getElementById('onboarding').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+}
+
+function applyTeam() {
+  document.getElementById('headerTitle').textContent = 'Shift Tracker';
+  document.getElementById('headerSub').textContent   = `Shift Team ${selectedTeam}`;
+}
+
+// ── Hero ─────────────────────────────────────────────────────
+function updateHero() {
+  const now  = new Date();
+  const h    = now.getHours();
+  const t    = today0();
+  const yest = addDays(t,-1);
+  const tom  = addDays(t,1);
+  const base = getShiftForDate(h<6 ? yest : t);
+
+  let label, hours, theme;
+
+  if (base==='Day') {
+    if (h>=6&&h<18) { label='Day Shift';  hours='06:00 – 18:00'; theme='Day'; }
+    else            { label='Off Duty';   hours='';               theme='Home'; }
+  } else if (base==='Night') {
+    if (h>=18||h<6) { label='Night Shift'; hours='18:00 – 06:00'; theme='Night'; }
+    else            { label='Off Duty';    hours='';               theme='Home'; }
+  } else if (base==='Standby') {
+    label='Standby'; hours='On call 24h'; theme='Standby';
+  } else if (base==='Rest') {
+    label='Rest Day'; hours='Day off'; theme='Rest';
+  } else {
+    label=base; hours=SHIFT_HOURS[base]||''; theme=base;
+  }
+
+  document.body.className = `shift-${theme}`;
+  document.getElementById('heroStatus').textContent = label;
+  document.getElementById('heroHours').textContent  = hours;
+  document.getElementById('headerDate').innerHTML   =
+    now.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).replace(',','<br>');
+
+  document.getElementById('cdLabel').textContent    = 'Next Change';
+  document.getElementById('countdown').textContent  = fmtCountdown(nextChange(now)-now);
+
+  // Tomorrow
+  const tShift = getShiftForDate(tom);
+  const tLabels = { Day:'Day', Night:'Night', Standby:'Standby', Rest:'Rest' };
+  document.getElementById('tomorrowVal').textContent = tLabels[tShift] || tShift;
+}
+
+// ── Week ─────────────────────────────────────────────────────
+function buildWeekView() {
+  const c = document.getElementById('weekScroll');
+  c.innerHTML = '';
+  const t = today0();
+
+  for (let i=0; i<7; i++) {
+    const d     = addDays(t,i);
+    const shift = getShiftForDate(d);
+
+    const card = document.createElement('div');
+    card.className = `day-card day-card-${shift}${i===0?' today':''}`;
+    card.style.animationDelay = `${i*0.04}s`;
+
+    card.innerHTML = `
+      <div class="day-card-top-bar"></div>
+      <div class="day-dow">${DAY_NAMES[d.getDay()]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      <div class="day-shift-chip">${shift}</div>
+      <div class="day-hours">${SHIFT_HOURS[shift]}</div>
+      ${i===0?'<div class="today-label">Today</div>':''}`;
+    c.appendChild(card);
+  }
+}
+
+// ── Month ─────────────────────────────────────────────────────
+function buildMonthView() {
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const t = today0();
+  document.getElementById('monthTitle').textContent =
+    `${MONTH_NAMES[viewMonth.getMonth()]} ${viewMonth.getFullYear()}`;
+
+  const first  = new Date(viewMonth.getFullYear(),viewMonth.getMonth(),1);
+  const last   = new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,0);
+  const offset = first.getDay()===0 ? 6 : first.getDay()-1;
+
+  for (let i=0; i<offset; i++) {
+    const e = document.createElement('div');
+    e.className = 'cal-cell cal-cell-empty';
+    grid.appendChild(e);
+  }
+
+  for (let day=1; day<=last.getDate(); day++) {
+    const d       = new Date(viewMonth.getFullYear(),viewMonth.getMonth(),day);
+    const shift   = getShiftForDate(d);
+    const isToday = d.getTime()===t.getTime();
+    const delay   = ((offset+day-1)%7)*0.025;
+
+    const cell = document.createElement('div');
+    cell.className = `cal-cell cal-cell-${shift}${isToday?' is-today':''}`;
+    cell.style.animationDelay = `${delay}s`;
+    cell.innerHTML = `
+      <div class="cal-num">${day}</div>
+      <div class="cal-shift-label">${shift.substring(0,3)}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+function changeMonth(dir) {
+  viewMonth = new Date(viewMonth.getFullYear(),viewMonth.getMonth()+dir,1);
+  buildMonthView();
+}
+
+// ── Search ────────────────────────────────────────────────────
+function onDatePick(val) {
+  if (!val) return;
+  const parts = val.split('-');
+  const d     = new Date(+parts[0],+parts[1]-1,+parts[2]);
+  const shift = getShiftForDate(d);
+  const dateStr = `${FULL_DAYS[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+
+  document.getElementById('searchResult').innerHTML = `
+    <div class="result-card result-${shift}">
+      <div class="result-color-bar"></div>
+      <div class="result-body">
+        <div class="result-date-str">${dateStr}</div>
+        <div class="result-shift-name">${shift}</div>
+        <div class="result-divider"></div>
+        <div class="result-meta">
+          <span class="result-meta-label">Hours</span>
+          <span class="result-meta-value">${SHIFT_HOURS[shift]}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('active',
+      (i===0&&tab==='week')||(i===1&&tab==='month')||(i===2&&tab==='search')));
+  document.getElementById('weekView').classList.toggle('active',  tab==='week');
+  document.getElementById('monthView').classList.toggle('active', tab==='month');
+  document.getElementById('searchView').classList.toggle('active',tab==='search');
+  if (tab==='month') buildMonthView();
+  if (tab==='search') {
+    const t   = today0();
+    const iso = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    const picker = document.getElementById('datePicker');
+    if (!picker.value) { picker.value=iso; onDatePick(iso); }
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+const saved = getTeam();
+if (saved) {
+  selectedTeam = saved;
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').style.display = '';
+  applyTeam();
+  updateHero();
+  buildWeekView();
+} else {
+  document.getElementById('app').style.display = 'none';
+}
+
+document.addEventListener('pointerup', ()=>{});
+
+setInterval(()=>{
+  const now = new Date();
+  document.getElementById('countdown').textContent = fmtCountdown(nextChange(now)-now);
+}, 1000);
+
+setInterval(updateHero, 60000);
+</script>
+</body>
+</html>
