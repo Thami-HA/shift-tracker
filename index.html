@@ -307,11 +307,7 @@ body {
   text-align: center;
   position: relative;
   overflow: hidden;
-  animation: cardIn 0.3s cubic-bezier(.4,0,.2,1) both;
-}
-@keyframes cardIn {
-  from { opacity:0; transform:translateY(8px); }
-  to   { opacity:1; transform:translateY(0); }
+
 }
 
 .day-card.today { border-color: var(--ha-accent); }
@@ -626,7 +622,7 @@ body {
   padding: 16px; background: #1c1c1e;
   border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
 }
-/* Month PH Option B */
+/* Month PH Option B+C */
 .cal-cell.is-ph { outline: 1.5px solid #FFC107; outline-offset: -1px; }
 .ph-cell-dot {
   position: absolute; top: 3px; right: 3px;
@@ -637,13 +633,9 @@ body {
 .day-card.is-ph { border-color: #FFC107 !important; }
 .day-card.is-ph.today { border-color: #FFC107 !important; }
 .ph-card-dot {
-  position: absolute;
-  top: 6px; right: 6px;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #FFC107;
+  position: absolute; top: 6px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%; background: #FFC107;
 }
-
 </style>
 </head>
 <body>
@@ -739,7 +731,7 @@ body {
 <script>
 // ── Config ──────────────────────────────────────────────────
 const ROTATION     = ["Night","Rest","Day","Standby"];
-const REF_DATE     = new Date(2026,1,27); // Feb 27 2026 = Night for Team D
+const REF_DATE     = new Date(2026,1,27);
 const DAY_NAMES    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const FULL_DAYS    = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -867,7 +859,6 @@ function updateHero() {
   document.getElementById('cdLabel').textContent    = 'Next Change';
   document.getElementById('countdown').textContent  = fmtCountdown(nextChange(now)-now);
 
-  // Tomorrow
   const tShift = getShiftForDate(tom);
   const tLabels = { Day:'Day', Night:'Night', Standby:'Standby', Rest:'Rest' };
   document.getElementById('tomorrowVal').textContent = tLabels[tShift] || tShift;
@@ -882,11 +873,10 @@ function buildWeekView() {
   for (let i=0; i<7; i++) {
     const d     = addDays(t,i);
     const shift = getShiftForDate(d);
-
     const isPHDay = isHolidayDate(d);
     const card = document.createElement('div');
     card.className = `day-card day-card-${shift}${i===0?' today':''}${isPHDay?' is-ph':''}`;
-    card.style.animationDelay = `${i*0.04}s`;
+
 
     card.innerHTML = `
       <div class="day-card-top-bar"></div>
@@ -895,7 +885,8 @@ function buildWeekView() {
       <div class="day-num">${d.getDate()}</div>
       <div class="day-shift-chip">${shift}</div>
       <div class="day-hours">${SHIFT_HOURS[shift]}</div>
-      ${i===0?'<div class="today-label">Today</div>':''}`;    c.appendChild(card);
+      ${i===0?'<div class="today-label">Today</div>':''}`;
+    c.appendChild(card);
   }
 }
 
@@ -922,9 +913,8 @@ function buildMonthView() {
     const shift   = getShiftForDate(d);
     const isToday = d.getTime()===t.getTime();
     const delay   = ((offset+day-1)%7)*0.025;
-
-    const cell = document.createElement('div');
-    const isPH = isHolidayDate(d);
+    const cell    = document.createElement('div');
+    const isPH    = isHolidayDate(d);
     cell.className = `cal-cell cal-cell-${shift}${isToday?' is-today':''}${isPH?' is-ph':''}`;
     cell.style.animationDelay = `${delay}s`;
     cell.innerHTML = `
@@ -980,10 +970,8 @@ function switchTab(tab) {
   }
 }
 
-
-// ── SA Public Holidays (Dynamic Easter Math) ──────────────────
+// ── SA Public Holidays (Dynamic Easter) ──────────────────────
 function getHolidaysForYear(year) {
-  // Calculate Easter dynamically (Meeus/Jones/Butcher algorithm)
   const a = year % 19, b = Math.floor(year / 100), c = year % 100;
   const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
   const g = Math.floor((b - f + 1) / 3);
@@ -992,25 +980,22 @@ function getHolidaysForYear(year) {
   const l = (32 + 2 * e + 2 * i - h - k) % 7;
   const m = Math.floor((a + 11 * h + 22 * l) / 451);
   const month = Math.floor((h + l - 7 * m + 114) / 31);
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  const easter = new Date(year, month - 1, day);
-
+  const day   = ((h + l - 7 * m + 114) % 31) + 1;
   const goodFriday = new Date(year, month - 1, day - 2);
-  const familyDay = new Date(year, month - 1, day + 1);
-
+  const familyDay  = new Date(year, month - 1, day + 1);
   return [
-    { month: 1,  day: 1,  name: "New Year's Day" },
-    { month: 3,  day: 21, name: "Human Rights Day" },
-    { month: goodFriday.getMonth() + 1, day: goodFriday.getDate(), name: "Good Friday" },
-    { month: familyDay.getMonth() + 1, day: familyDay.getDate(), name: "Family Day" },
-    { month: 4,  day: 27, name: "Freedom Day" },
-    { month: 5,  day: 1,  name: "Workers' Day" },
-    { month: 6,  day: 16, name: "Youth Day" },
-    { month: 8,  day: 9,  name: "National Women's Day" },
-    { month: 9,  day: 24, name: "Heritage Day" },
-    { month: 12, day: 16, name: "Day of Reconciliation" },
-    { month: 12, day: 25, name: "Christmas Day" },
-    { month: 12, day: 26, name: "Day of Goodwill" }
+    { month:1,  day:1,  name:"New Year's Day" },
+    { month:3,  day:21, name:"Human Rights Day" },
+    { month:goodFriday.getMonth()+1, day:goodFriday.getDate(), name:"Good Friday" },
+    { month:familyDay.getMonth()+1,  day:familyDay.getDate(),  name:"Family Day" },
+    { month:4,  day:27, name:"Freedom Day" },
+    { month:5,  day:1,  name:"Workers' Day" },
+    { month:6,  day:16, name:"Youth Day" },
+    { month:8,  day:9,  name:"National Women's Day" },
+    { month:9,  day:24, name:"Heritage Day" },
+    { month:12, day:16, name:"Day of Reconciliation" },
+    { month:12, day:25, name:"Christmas Day" },
+    { month:12, day:26, name:"Day of Goodwill" },
   ];
 }
 
@@ -1026,12 +1011,11 @@ function getObservedDate(year, month, day) {
 
 function getHolidaysInRange(fromDate, days) {
   const results = [];
-  const to = addDays(fromDate, days);
+  const to   = addDays(fromDate, days);
   const seen = new Set();
   const years = [...new Set([fromDate.getFullYear(), to.getFullYear()])];
   years.forEach(year => {
-    const holidays = getHolidaysForYear(year);
-    holidays.forEach(ph => {
+    getHolidaysForYear(year).forEach(ph => {
       const observed = getObservedDate(year, ph.month, ph.day);
       const key = dateKey(observed);
       if (seen.has(key)) return;
@@ -1047,34 +1031,28 @@ function getHolidaysInRange(fromDate, days) {
 }
 
 function isHolidayDate(d) {
-  const key = dateKey(d);
+  const key  = dateKey(d);
   const year = d.getFullYear();
-  const holidays = getHolidaysForYear(year);
-  return holidays.some(ph => {
-    const obs = getObservedDate(year, ph.month, ph.day);
-    return dateKey(obs) === key;
-  });
+  return getHolidaysForYear(year).some(ph => dateKey(getObservedDate(year, ph.month, ph.day)) === key);
 }
 
 function calcPHHours(holidayDate) {
   const shift     = getShiftForDate(holidayDate);
   const prevShift = getShiftForDate(addDays(holidayDate, -1));
-  let hours = 0, detail = '', chipColor = '';
+  let hours = 0, chipColor = '';
   if (shift === 'Day') {
-    hours = 12; detail = '06:00 – 18:00'; chipColor = 'background:rgba(255,143,0,0.15);color:#ff8f00';
+    hours = 12; chipColor = 'background:rgba(255,143,0,0.15);color:#ff8f00';
   } else if (shift === 'Night') {
-    hours = 6; detail = '18:00 – 00:00'; chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
-    if (prevShift === 'Night') { hours = 12; detail = '00:00–06:00 & 18:00–00:00'; }
+    hours = 6;  chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
+    if (prevShift === 'Night') hours = 12;
   } else if (shift === 'Rest' || shift === 'Standby') {
     if (prevShift === 'Night') {
-      hours = 6; detail = '00:00 – 06:00'; chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
+      hours = 6; chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
     } else {
-      hours = 0;
-      detail = shift === 'Rest' ? 'Day off' : 'On call';
-      chipColor = 'background:rgba(255,255,255,0.06);color:#9da0a8';
+      hours = 0; chipColor = 'background:rgba(255,255,255,0.06);color:#9da0a8';
     }
   }
-  return { hours, detail, shift, chipColor };
+  return { hours, shift, chipColor };
 }
 
 function buildPHPanel() {
@@ -1089,7 +1067,7 @@ function buildPHPanel() {
   const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   panel.innerHTML = '<div class="ph-panel-title">🇿🇦 Public Holidays</div>' +
     holidays.map(ph => {
-      const { hours, detail, shift, chipColor } = calcPHHours(ph.date);
+      const { hours, shift, chipColor } = calcPHHours(ph.date);
       const dateStr = `${DS[ph.date.getDay()]} ${ph.date.getDate()} ${MS[ph.date.getMonth()]}`;
       const obsTag  = ph.observed ? '<span class="ph-observed-tag">observed</span>' : '';
       return `<div class="ph-card">
@@ -1122,25 +1100,19 @@ if (saved) {
   document.getElementById('app').style.display = 'none';
 }
 
-document.addEventListener('pointerup', ()=>{});
-
 setInterval(()=>{
-  const now = new Date();
-  document.getElementById('countdown').textContent = fmtCountdown(nextChange(now)-now);
+  document.getElementById('countdown').textContent = fmtCountdown(nextChange(new Date())-new Date());
 }, 1000);
-
 setInterval(updateHero, 60000);
 
-// NEW Service Worker registration pointing to the external sw.js file
+// ── Service Worker ────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.error('ServiceWorker registration failed: ', err);
-    });
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
   });
 }
 
-// PWA Install prompt
+// ── PWA Install prompt ────────────────────────────────────────
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
