@@ -9,8 +9,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Shift Tracker">
 <meta name="theme-color" content="#111318">
+
+<link rel="manifest" href="/manifest.json">
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="manifest" href="data:application/json,{%22name%22:%22Shift%20Tracker%22,%22short_name%22:%22Shifts%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23111318%22,%22theme_color%22:%22%23111318%22}">
+
 <style>
 :root {
   --ha-bg:             #111318;
@@ -671,14 +674,6 @@ body {
 
 </div>
 
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:#1c1c1e;border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px 28px;align-items:center;justify-content:space-between;z-index:300;">
-  <div>
-    <div style="font-size:13px;font-weight:500;color:#e1e1e1;">&#x26F4;&#xFE0F; Install Shift Tracker</div>
-    <div style="font-size:11px;color:#9da0a8;margin-top:2px;">Add to home screen for the full app experience</div>
-  </div>
-  <button onclick="installApp()" style="padding:8px 18px;border-radius:20px;border:none;background:#03a9f4;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;margin-left:12px;">Install</button>
-</div>
-
 <script>
 // ── Config ──────────────────────────────────────────────────
 const ROTATION     = ["Night","Rest","Day","Standby"];
@@ -941,69 +936,42 @@ setInterval(()=>{
 
 setInterval(updateHero, 60000);
 
-// ── PWA & Install Logic ───────────────────────────────────────
-
-// 1. Register Service Worker
+// NEW Service Worker registration pointing to the external sw.js file
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registered'))
-      .catch(err => console.log('Service Worker failed', err));
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.error('ServiceWorker registration failed: ', err);
+    });
   });
 }
 
-const installBanner = document.getElementById('installBanner');
+// PWA Install prompt
 let deferredPrompt = null;
-
-// Helper: Check if already installed
-const isStandalone = () => {
-  return ('standalone' in window.navigator && window.navigator.standalone) || 
-         window.matchMedia('(display-mode: standalone)').matches;
-};
-
-// Helper: Check if iOS
-const isIos = () => {
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  return /iphone|ipad|ipod/.test(userAgent);
-};
-
-// Display install logic based on device
-if (!isStandalone()) {
-  if (isIos()) {
-    // Show iOS manual instructions
-    installBanner.style.display = 'flex';
-    installBanner.innerHTML = `
-      <div>
-        <div style="font-size:13px;font-weight:500;color:#e1e1e1;">&#x1F4F1; Install on iPhone</div>
-        <div style="font-size:11px;color:#9da0a8;margin-top:2px;">Tap the <b>Share</b> icon below, then select <b>Add to Home Screen</b>.</div>
-      </div>
-      <button onclick="document.getElementById('installBanner').style.display='none'" style="padding:8px;background:transparent;border:none;color:#9da0a8;font-size:16px;cursor:pointer;">&#x2715;</button>
-    `;
-  } else {
-    // Android/Desktop native prompt
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBanner.style.display = 'flex';
-    });
-
-    window.addEventListener('appinstalled', () => {
-      installBanner.style.display = 'none';
-    });
-  }
-}
-
-// Triggered by the Android install button
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').style.display = 'none';
+});
 function installApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => {
       deferredPrompt = null;
-      installBanner.style.display = 'none';
+      document.getElementById('installBanner').style.display = 'none';
     });
   }
 }
 </script>
 
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:#1c1c1e;border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px 28px;align-items:center;justify-content:space-between;z-index:300;">
+  <div>
+    <div style="font-size:13px;font-weight:500;color:#e1e1e1;">&#x26F4;&#xFE0F; Install Shift Tracker</div>
+    <div style="font-size:11px;color:#9da0a8;margin-top:2px;">Add to home screen for the full app experience</div>
+  </div>
+  <button onclick="installApp()" style="padding:8px 18px;border-radius:20px;border:none;background:#03a9f4;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;margin-left:12px;">Install</button>
+</div>
 </body>
 </html>
