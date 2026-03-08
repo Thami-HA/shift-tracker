@@ -13,7 +13,6 @@
 <link rel="manifest" href="/manifest.json">
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <style>
 :root {
   --ha-bg:             #111318;
@@ -447,6 +446,7 @@ body {
   gap: 3px;
   padding: 4px 2px;
   animation: cellIn 0.25s cubic-bezier(.4,0,.2,1) both;
+  position: relative;
 }
 .cal-cell:nth-child(7n) { border-right: none; }
 @keyframes cellIn { from{opacity:0} to{opacity:1} }
@@ -583,6 +583,67 @@ body {
 .change-team-btn:active { background: var(--ha-border); }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* ── Public Holiday Panel ─────────────────────────────────── */
+.ph-panel { margin-top: 12px; }
+.ph-panel-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #9da0a8;
+  margin-bottom: 8px; padding: 0 2px;
+}
+.ph-card {
+  background: #1c1c1e; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden; margin-bottom: 8px;
+  display: flex; align-items: stretch;
+}
+.ph-card-accent { width: 3px; background: #FFC107; flex-shrink: 0; }
+.ph-card-body {
+  padding: 12px 14px; flex: 1;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 8px;
+}
+.ph-card-name { font-size: 13px; font-weight: 500; color: #e1e1e1; margin-bottom: 2px; }
+.ph-card-date { font-size: 11px; color: #9da0a8; }
+.ph-observed-tag {
+  font-size: 9px; background: rgba(255,193,7,0.15); color: #FFC107;
+  border-radius: 3px; padding: 1px 4px; margin-left: 4px;
+  font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase;
+}
+.ph-card-right { text-align: right; flex-shrink: 0; }
+.ph-hours-val {
+  font-family: 'Roboto Mono', monospace; font-size: 18px;
+  font-weight: 400; color: #e1e1e1; line-height: 1; margin-bottom: 2px;
+}
+.ph-hours-val.zero { color: #4a4c52; }
+.ph-hours-detail { font-size: 9px; color: #9da0a8; }
+.ph-shift-chip {
+  display: inline-block; padding: 1px 6px; border-radius: 20px;
+  font-size: 9px; font-weight: 500; margin-bottom: 3px;
+}
+.ph-empty {
+  font-size: 12px; color: #9da0a8; text-align: center;
+  padding: 16px; background: #1c1c1e;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+}
+/* Month PH Option B */
+.cal-cell.is-ph { outline: 1.5px solid #FFC107; outline-offset: -1px; }
+.ph-cell-dot {
+  position: absolute; top: 3px; right: 3px;
+  width: 5px; height: 5px; border-radius: 50%; background: #FFC107;
+}
+
+/* ── Week card PH (B+C) ───────────────────────────────────── */
+.day-card.is-ph { border-color: #FFC107 !important; }
+.day-card.is-ph.today { border-color: #FFC107 !important; }
+.ph-card-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #FFC107;
+}
+
 </style>
 </head>
 <body>
@@ -641,6 +702,7 @@ body {
 
   <div class="week-view active" id="weekView">
     <div class="week-scroll" id="weekScroll"></div>
+    <div class="ph-panel" id="phPanel"></div>
   </div>
 
   <div class="month-view" id="monthView">
@@ -753,6 +815,7 @@ function confirmTeam() {
   applyTeam();
   updateHero();
   buildWeekView();
+  buildPHPanel();
   if (navigator.vibrate) navigator.vibrate([10,40,10]);
 }
 
@@ -820,18 +883,19 @@ function buildWeekView() {
     const d     = addDays(t,i);
     const shift = getShiftForDate(d);
 
+    const isPHDay = isHolidayDate(d);
     const card = document.createElement('div');
-    card.className = `day-card day-card-${shift}${i===0?' today':''}`;
+    card.className = `day-card day-card-${shift}${i===0?' today':''}${isPHDay?' is-ph':''}`;
     card.style.animationDelay = `${i*0.04}s`;
 
     card.innerHTML = `
       <div class="day-card-top-bar"></div>
+      ${isPHDay ? '<div class="ph-card-dot"></div>' : ''}
       <div class="day-dow">${DAY_NAMES[d.getDay()]}</div>
       <div class="day-num">${d.getDate()}</div>
       <div class="day-shift-chip">${shift}</div>
       <div class="day-hours">${SHIFT_HOURS[shift]}</div>
-      ${i===0?'<div class="today-label">Today</div>':''}`;
-    c.appendChild(card);
+      ${i===0?'<div class="today-label">Today</div>':''}`;    c.appendChild(card);
   }
 }
 
@@ -860,9 +924,11 @@ function buildMonthView() {
     const delay   = ((offset+day-1)%7)*0.025;
 
     const cell = document.createElement('div');
-    cell.className = `cal-cell cal-cell-${shift}${isToday?' is-today':''}`;
+    const isPH = isHolidayDate(d);
+    cell.className = `cal-cell cal-cell-${shift}${isToday?' is-today':''}${isPH?' is-ph':''}`;
     cell.style.animationDelay = `${delay}s`;
     cell.innerHTML = `
+      ${isPH ? '<div class="ph-cell-dot"></div>' : ''}
       <div class="cal-num">${day}</div>
       <div class="cal-shift-label">${shift.substring(0,3)}</div>`;
     grid.appendChild(cell);
@@ -914,6 +980,134 @@ function switchTab(tab) {
   }
 }
 
+
+// ── SA Public Holidays (Dynamic Easter Math) ──────────────────
+function getHolidaysForYear(year) {
+  // Calculate Easter dynamically (Meeus/Jones/Butcher algorithm)
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  const easter = new Date(year, month - 1, day);
+
+  const goodFriday = new Date(year, month - 1, day - 2);
+  const familyDay = new Date(year, month - 1, day + 1);
+
+  return [
+    { month: 1,  day: 1,  name: "New Year's Day" },
+    { month: 3,  day: 21, name: "Human Rights Day" },
+    { month: goodFriday.getMonth() + 1, day: goodFriday.getDate(), name: "Good Friday" },
+    { month: familyDay.getMonth() + 1, day: familyDay.getDate(), name: "Family Day" },
+    { month: 4,  day: 27, name: "Freedom Day" },
+    { month: 5,  day: 1,  name: "Workers' Day" },
+    { month: 6,  day: 16, name: "Youth Day" },
+    { month: 8,  day: 9,  name: "National Women's Day" },
+    { month: 9,  day: 24, name: "Heritage Day" },
+    { month: 12, day: 16, name: "Day of Reconciliation" },
+    { month: 12, day: 25, name: "Christmas Day" },
+    { month: 12, day: 26, name: "Day of Goodwill" }
+  ];
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getObservedDate(year, month, day) {
+  const d = new Date(year, month - 1, day);
+  if (d.getDay() === 0) return new Date(year, month - 1, day + 1);
+  return d;
+}
+
+function getHolidaysInRange(fromDate, days) {
+  const results = [];
+  const to = addDays(fromDate, days);
+  const seen = new Set();
+  const years = [...new Set([fromDate.getFullYear(), to.getFullYear()])];
+  years.forEach(year => {
+    const holidays = getHolidaysForYear(year);
+    holidays.forEach(ph => {
+      const observed = getObservedDate(year, ph.month, ph.day);
+      const key = dateKey(observed);
+      if (seen.has(key)) return;
+      if (observed >= fromDate && observed < to) {
+        seen.add(key);
+        const isObserved = observed.getDate() !== ph.day || observed.getMonth() !== ph.month - 1;
+        results.push({ date: observed, name: ph.name, observed: isObserved });
+      }
+    });
+  });
+  results.sort((a,b) => a.date - b.date);
+  return results;
+}
+
+function isHolidayDate(d) {
+  const key = dateKey(d);
+  const year = d.getFullYear();
+  const holidays = getHolidaysForYear(year);
+  return holidays.some(ph => {
+    const obs = getObservedDate(year, ph.month, ph.day);
+    return dateKey(obs) === key;
+  });
+}
+
+function calcPHHours(holidayDate) {
+  const shift     = getShiftForDate(holidayDate);
+  const prevShift = getShiftForDate(addDays(holidayDate, -1));
+  let hours = 0, detail = '', chipColor = '';
+  if (shift === 'Day') {
+    hours = 12; detail = '06:00 – 18:00'; chipColor = 'background:rgba(255,143,0,0.15);color:#ff8f00';
+  } else if (shift === 'Night') {
+    hours = 6; detail = '18:00 – 00:00'; chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
+    if (prevShift === 'Night') { hours = 12; detail = '00:00–06:00 & 18:00–00:00'; }
+  } else if (shift === 'Rest' || shift === 'Standby') {
+    if (prevShift === 'Night') {
+      hours = 6; detail = '00:00 – 06:00'; chipColor = 'background:rgba(61,90,254,0.15);color:#3d5afe';
+    } else {
+      hours = 0;
+      detail = shift === 'Rest' ? 'Day off' : 'On call';
+      chipColor = 'background:rgba(255,255,255,0.06);color:#9da0a8';
+    }
+  }
+  return { hours, detail, shift, chipColor };
+}
+
+function buildPHPanel() {
+  const panel = document.getElementById('phPanel');
+  if (!panel) return;
+  const holidays = getHolidaysInRange(today0(), 30);
+  if (holidays.length === 0) {
+    panel.innerHTML = '<div class="ph-empty">No public holidays in the next 30 days</div>';
+    return;
+  }
+  const DS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  panel.innerHTML = '<div class="ph-panel-title">🇿🇦 Public Holidays</div>' +
+    holidays.map(ph => {
+      const { hours, detail, shift, chipColor } = calcPHHours(ph.date);
+      const dateStr = `${DS[ph.date.getDay()]} ${ph.date.getDate()} ${MS[ph.date.getMonth()]}`;
+      const obsTag  = ph.observed ? '<span class="ph-observed-tag">observed</span>' : '';
+      return `<div class="ph-card">
+        <div class="ph-card-accent"></div>
+        <div class="ph-card-body">
+          <div class="ph-card-left">
+            <div class="ph-card-name">${ph.name}${obsTag}</div>
+            <div class="ph-card-date">${dateStr} &nbsp;·&nbsp; <span class="ph-shift-chip" style="${chipColor}">${shift}</span></div>
+          </div>
+          <div class="ph-card-right">
+            <div class="ph-hours-val${hours===0?' zero':''}">${hours}</div>
+            <div class="ph-hours-detail">hours</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
 // ── Init ──────────────────────────────────────────────────────
 const saved = getTeam();
 if (saved) {
@@ -923,6 +1117,7 @@ if (saved) {
   applyTeam();
   updateHero();
   buildWeekView();
+  buildPHPanel();
 } else {
   document.getElementById('app').style.display = 'none';
 }
