@@ -310,7 +310,7 @@ body {
 
 }
 
-.day-card.today { border-color: var(--ha-accent); }
+.day-card.today { border-color: #03a9f4; }
 
 .day-card-top-bar {
   position: absolute;
@@ -338,7 +338,7 @@ body {
   line-height: 1;
   margin-bottom: 8px;
 }
-.day-card.today .day-num { color: var(--ha-accent); }
+.day-card.today .day-num { color: #03a9f4; }
 
 .day-shift-chip {
   display: inline-block;
@@ -441,12 +441,9 @@ body {
   justify-content: center;
   gap: 3px;
   padding: 4px 2px;
-  animation: cellIn 0.25s cubic-bezier(.4,0,.2,1) both;
   position: relative;
 }
 .cal-cell:nth-child(7n) { border-right: none; }
-@keyframes cellIn { from{opacity:0} to{opacity:1} }
-
 .cal-cell-empty   { background: transparent; }
 .cal-cell-Night   { background: rgba(61,90,254,0.12); }
 .cal-cell-Day     { background: rgba(255,143,0,0.12); }
@@ -562,6 +559,8 @@ body {
 .result-meta { display: flex; align-items: center; justify-content: space-between; }
 .result-meta-label { font-size: 11px; color: var(--ha-text-secondary); }
 .result-meta-value { font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--ha-text-primary); }
+.result-card.is-ph { border: 1px solid rgba(255,193,7,0.5); box-shadow: 0 0 14px rgba(255,193,7,0.07); }
+.result-ph-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; color: #FFC107; }
 
 /* ── Change team pill ─────────────────────────────────────── */
 .change-team-btn {
@@ -623,15 +622,14 @@ body {
   border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
 }
 /* Month PH Option B+C */
-.cal-cell.is-ph { outline: 1.5px solid #FFC107; outline-offset: -1px; }
+.cal-cell.is-ph {}
 .ph-cell-dot {
   position: absolute; top: 3px; right: 3px;
   width: 5px; height: 5px; border-radius: 50%; background: #FFC107;
 }
 
 /* ── Week card PH (B+C) ───────────────────────────────────── */
-.day-card.is-ph { border-color: #FFC107 !important; }
-.day-card.is-ph.today { border-color: #FFC107 !important; }
+
 .ph-card-dot {
   position: absolute; top: 6px; right: 6px;
   width: 6px; height: 6px; border-radius: 50%; background: #FFC107;
@@ -832,22 +830,50 @@ function updateHero() {
   const t    = today0();
   const yest = addDays(t,-1);
   const tom  = addDays(t,1);
-  const base = getShiftForDate(h<6 ? yest : t);
+  const todayShift     = getShiftForDate(t);
+  const yesterdayShift = getShiftForDate(yest);
 
   let label, hours, theme;
 
-  if (base==='Day') {
-    if (h>=6&&h<18) { label='Day Shift';  hours='06:00 – 18:00'; theme='Day'; }
-    else            { label='Off Duty';   hours='';               theme='Home'; }
-  } else if (base==='Night') {
-    if (h>=18||h<6) { label='Night Shift'; hours='18:00 – 06:00'; theme='Night'; }
-    else            { label='Off Duty';    hours='';               theme='Home'; }
-  } else if (base==='Standby') {
-    label='Standby'; hours='On call 24h'; theme='Standby';
-  } else if (base==='Rest') {
+  // Yesterday's Night still active (00:00–06:00)
+  const inYesterdayNight = h < 6 && yesterdayShift === 'Night';
+
+  // Day ended 18:00, 12hr rest before Standby at 06:00
+  const inPostDayBuffer = h < 6 && yesterdayShift === 'Day' && todayShift === 'Standby';
+
+  if (inYesterdayNight) {
+    label='Night Shift'; hours='18:00 – 06:00'; theme='Night';
+
+  } else if (inPostDayBuffer) {
+    label='Off Duty'; hours='Standby from 06:00'; theme='Home';
+
+  } else if (todayShift === 'Day') {
+    if (h >= 6 && h < 18) {
+      label='Day Shift'; hours='06:00 – 18:00'; theme='Day';
+    } else if (h < 6) {
+      // Rest → Day: midnight to 06:00
+      label='Off Duty'; hours='Day shift starts at 06:00'; theme='Home';
+    } else {
+      // After 18:00 — knocked off
+      label='Off Duty'; hours='Standby from 06:00 tomorrow'; theme='Home';
+    }
+
+  } else if (todayShift === 'Night') {
+    if (h >= 18) {
+      label='Night Shift'; hours='18:00 – 06:00'; theme='Night';
+    } else {
+      // Standby → Night: waiting for tonight
+      label='Off Duty'; hours='Night shift starts at 18:00'; theme='Home';
+    }
+
+  } else if (todayShift === 'Standby') {
+    label='On Call'; hours='24h Standby'; theme='Standby';
+
+  } else if (todayShift === 'Rest') {
     label='Rest Day'; hours='Day off'; theme='Rest';
+
   } else {
-    label=base; hours=SHIFT_HOURS[base]||''; theme=base;
+    label=todayShift; hours=SHIFT_HOURS[todayShift]||''; theme=todayShift;
   }
 
   document.body.className = `shift-${theme}`;
@@ -856,8 +882,8 @@ function updateHero() {
   document.getElementById('headerDate').innerHTML   =
     now.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).replace(',','<br>');
 
-  document.getElementById('cdLabel').textContent    = 'Next Change';
-  document.getElementById('countdown').textContent  = fmtCountdown(nextChange(now)-now);
+  document.getElementById('cdLabel').textContent   = label === 'Off Duty' ? 'Shift Starts' : 'Next Change';
+  document.getElementById('countdown').textContent = fmtCountdown(nextChange(now)-now);
 
   const tShift = getShiftForDate(tom);
   const tLabels = { Day:'Day', Night:'Night', Standby:'Standby', Rest:'Rest' };
@@ -933,13 +959,20 @@ function changeMonth(dir) {
 // ── Search ────────────────────────────────────────────────────
 function onDatePick(val) {
   if (!val) return;
-  const parts = val.split('-');
-  const d     = new Date(+parts[0],+parts[1]-1,+parts[2]);
-  const shift = getShiftForDate(d);
+  const parts   = val.split('-');
+  const d       = new Date(+parts[0],+parts[1]-1,+parts[2]);
+  const shift   = getShiftForDate(d);
   const dateStr = `${FULL_DAYS[d.getDay()]}, ${d.getDate()} ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+  const holidays = getHolidaysForYear(d.getFullYear());
+  const phMatch  = holidays.find(ph => {
+    const obs = getObservedDate(d.getFullYear(), ph.month, ph.day);
+    return obs.toDateString() === d.toDateString();
+  });
+  const phRow = phMatch
+    ? `<div class="result-ph-row">🇿🇦 <span>${phMatch.name} — Public Holiday</span></div>` : '';
 
   document.getElementById('searchResult').innerHTML = `
-    <div class="result-card result-${shift}">
+    <div class="result-card result-${shift}${phMatch?' is-ph':''}">
       <div class="result-color-bar"></div>
       <div class="result-body">
         <div class="result-date-str">${dateStr}</div>
@@ -949,6 +982,7 @@ function onDatePick(val) {
           <span class="result-meta-label">Hours</span>
           <span class="result-meta-value">${SHIFT_HOURS[shift]}</span>
         </div>
+        ${phRow}
       </div>
     </div>`;
 }
