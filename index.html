@@ -456,16 +456,11 @@ body {
   color: var(--ha-text-primary);
   line-height: 1;
 }
+.cal-cell.is-today {
+  border: 1.5px solid #03a9f4;
+}
 .cal-cell.is-today .cal-num {
-  background: var(--ha-accent);
-  color: #fff;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
+  color: #03a9f4;
   font-weight: 500;
 }
 
@@ -661,7 +656,7 @@ body {
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="header-date" id="headerDate"></div>
-      <button class="change-team-btn" onclick="resetTeam()">Team</button>
+      <button class="change-team-btn" onclick="resetTeam()">Select Team</button>
     </div>
   </div>
 
