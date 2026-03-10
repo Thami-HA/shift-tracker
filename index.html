@@ -735,9 +735,32 @@ let selectedTeam = null;
 let viewMonth    = new Date();
 
 // ── Persistence ──────────────────────────────────────────────
-function getTeam()     { try { return localStorage.getItem('liteTeam'); } catch(e) { return null; } }
-function saveTeam(t)   { try { localStorage.setItem('liteTeam', t); } catch(e) {} }
-function removeTeam()  { try { localStorage.removeItem('liteTeam'); } catch(e) {} }
+function getTeamFromURL() {
+  try {
+    const p = new URLSearchParams(window.location.search).get('team');
+    return ['A','B','C','D'].includes(p) ? p : null;
+  } catch(e) { return null; }
+}
+function getTeam() {
+  return getTeamFromURL() || (localStorage.getItem('liteTeam') || null);
+}
+function saveTeam(t) {
+  try { localStorage.setItem('liteTeam', t); } catch(e) {}
+  // Update URL param without reloading page
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('team', t);
+    window.history.replaceState({}, '', url);
+  } catch(e) {}
+}
+function removeTeam() {
+  try { localStorage.removeItem('liteTeam'); } catch(e) {}
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('team');
+    window.history.replaceState({}, '', url);
+  } catch(e) {}
+}
 
 // ── Shift calc ──────────────────────────────────────────────
 function daysBetween(a,b) {
