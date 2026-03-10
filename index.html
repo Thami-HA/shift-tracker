@@ -850,7 +850,12 @@ function updateHero() {
       label='Off Duty'; hours='Day shift starts at 06:00'; theme='Home';
     } else {
       // After 18:00 — knocked off
-      label='Off Duty'; hours='Standby from 06:00 tomorrow'; theme='Home';
+      label='Off Duty'; theme='Home';
+      const tomShift2 = getShiftForDate(tom);
+      if (tomShift2 === 'Day')          hours='06:00 – 18:00';
+      else if (tomShift2 === 'Night')   hours='18:00 – 06:00';
+      else if (tomShift2 === 'Standby') hours='Standby from 06:00';
+      else                              hours='';
     }
 
   } else if (todayShift === 'Night') {
