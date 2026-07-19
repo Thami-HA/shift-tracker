@@ -197,7 +197,49 @@ body {
 .shift-Rest     .hero-color-bar { background: #43a047; }
 .shift-Home     .hero-color-bar { background: #039be5; }
 
-.hero-body { padding: 20px 20px 0; }
+.hero-body {
+  padding: 20px 20px 0;
+}
+
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero-main { min-width: 0; }
+
+.weather-badge {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 0;
+  cursor: pointer;
+}
+
+.weather-icon {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.weather-loc {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  white-space: nowrap;
+}
+
+.weather-temp {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ha-text-primary);
+}
 
 .hero-label {
   font-size: 11px;
@@ -221,6 +263,7 @@ body {
   font-family: 'Roboto Mono', monospace;
   font-size: 12px;
   color: var(--ha-text-secondary);
+  margin-top: 4px;
   margin-bottom: 18px;
   min-height: 16px;
 }
@@ -252,6 +295,125 @@ body {
 
 .stat-value.ticker { animation: tick 2s ease-in-out infinite; }
 @keyframes tick { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── Weather Modal ────────────────────────────────────────── */
+.weather-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 400;
+}
+.weather-modal-overlay.open { display: flex; }
+.weather-modal {
+  width: 100%;
+  max-width: 430px;
+  background: var(--ha-card-bg);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--ha-border);
+  border-bottom: none;
+  max-height: 82vh;
+  overflow-y: auto;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+  animation: wmSlideUp 0.22s ease;
+}
+@keyframes wmSlideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.weather-modal-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--ha-border);
+  margin: 10px auto 0;
+}
+.weather-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 6px;
+}
+.weather-modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ha-text-primary);
+}
+.weather-modal-close {
+  background: none;
+  border: none;
+  color: var(--ha-text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.weather-modal-list { padding: 4px 10px 6px; }
+.wm-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 8px;
+  border-top: 1px solid var(--ha-divider);
+}
+.wm-row:first-child { border-top: none; }
+.wm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.wm-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.wm-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ha-text-primary);
+}
+.wm-dot { color: var(--ha-text-secondary); }
+.wm-value {
+  font-size: 14.5px;
+  color: var(--ha-text-secondary);
+}
+.weather-modal-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 18px 4px;
+  padding: 12px 16px;
+  background: rgba(79,195,247,0.14);
+  border: 1px solid rgba(79,195,247,0.4);
+  border-radius: 14px;
+  color: #4fc3f7;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.weather-modal-cta:active { background: rgba(79,195,247,0.22); }
+.wm-cta-icon { font-size: 16px; }
+.weather-modal-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ha-text-secondary);
+  padding: 12px 18px 2px;
+}
+.weather-modal-updated {
+  font-size: 10px;
+  color: var(--ha-text-secondary);
+  text-align: center;
+  padding: 6px 0 4px;
+}
 
 /* ── Tabs ─────────────────────────────────────────────────── */
 .tabs {
@@ -663,8 +825,17 @@ body {
   <div class="hero-card" id="heroCard">
     <div class="hero-color-bar"></div>
     <div class="hero-body">
-      <div class="hero-label">Current Status</div>
-      <div class="hero-status" id="heroStatus">--</div>
+      <div class="hero-top">
+        <div class="hero-main">
+          <div class="hero-label">Current Status</div>
+          <div class="hero-status" id="heroStatus">--</div>
+        </div>
+        <div class="weather-badge" id="weatherBadge" onclick="openWeatherModal()">
+          <div class="weather-loc">Port of Durban</div>
+          <div class="weather-icon" id="weatherIcon">&#9925;</div>
+          <div class="weather-temp" id="weatherTemp">--&deg;</div>
+        </div>
+      </div>
       <div class="hero-hours" id="heroHours"></div>
     </div>
     <div class="stats-row">
@@ -676,6 +847,54 @@ body {
         <div class="stat-label">Tomorrow</div>
         <div class="stat-value" id="tomorrowVal">--</div>
       </div>
+    </div>
+  </div>
+
+  <div class="weather-modal-overlay" id="weatherModalOverlay" onclick="closeWeatherModal(event)">
+    <div class="weather-modal" onclick="event.stopPropagation()">
+      <div class="weather-modal-handle"></div>
+      <div class="weather-modal-header">
+        <div class="weather-modal-title">Port of Durban</div>
+        <button class="weather-modal-close" onclick="closeWeatherModal()">&times;</button>
+      </div>
+      <div class="weather-modal-section-label">Air</div>
+      <div class="weather-modal-list">
+        <div class="wm-row">
+          <div class="wm-icon" id="wmConditionIcon">&#9925;</div>
+          <div class="wm-text"><span class="wm-label">Condition</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmCondition">--</span></div>
+        </div>
+        <div class="wm-row">
+          <div class="wm-icon">&#127783;&#65039;</div>
+          <div class="wm-text"><span class="wm-label">Precipitation</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmPrecip">--</span></div>
+        </div>
+        <div class="wm-row">
+          <div class="wm-icon">&#128168;</div>
+          <div class="wm-text"><span class="wm-label">Wind</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmWind">--</span></div>
+        </div>
+        <div class="wm-row">
+          <div class="wm-icon">&#128167;</div>
+          <div class="wm-text"><span class="wm-label">Humidity</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmHumidity">--</span></div>
+        </div>
+      </div>
+      <div class="weather-modal-section-label">Sea</div>
+      <div class="weather-modal-list">
+        <div class="wm-row">
+          <div class="wm-icon">&#127777;&#65039;</div>
+          <div class="wm-text"><span class="wm-label">Sea Temp</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmSeaTemp">--</span></div>
+        </div>
+        <div class="wm-row">
+          <div class="wm-icon">&#127754;</div>
+          <div class="wm-text"><span class="wm-label">Wave Height</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmWave">--</span></div>
+        </div>
+        <div class="wm-row">
+          <div class="wm-icon">&#12336;</div>
+          <div class="wm-text"><span class="wm-label">Swell</span><span class="wm-dot">&middot;</span><span class="wm-value" id="wmSwell">--</span></div>
+        </div>
+      </div>
+      <a class="weather-modal-cta" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13" target="_blank" rel="noopener">
+        <span class="wm-cta-icon">&#9875;</span> Vessels in port
+      </a>
+      <div class="weather-modal-updated" id="wmUpdated"></div>
     </div>
   </div>
 
@@ -825,6 +1044,7 @@ function confirmTeam() {
   buildWeekView();
   buildMonthView();
   buildPHPanel();
+  if (!harbourData.updatedAt) fetchHarbourWeather();
   if (navigator.vibrate) navigator.vibrate([10,40,10]);
 }
 
@@ -864,22 +1084,22 @@ function updateHero() {
     label='Night Shift'; hours='18:00 – 06:00'; theme='Night';
 
   } else if (inPostDayBuffer) {
-    label='Off Duty'; hours='Standby from 06:00'; theme='Home';
+    label='Off Duty'; hours='Standby from 06:00'; theme='Standby';
 
   } else if (todayShift === 'Day') {
     if (h >= 6 && h < 18) {
       label='Day Shift'; hours='06:00 – 18:00'; theme='Day';
     } else if (h < 6) {
       // Rest → Day: midnight to 06:00
-      label='Off Duty'; hours='Day shift starts at 06:00'; theme='Home';
+      label='Off Duty'; hours='Day shift starts at 06:00'; theme='Day';
     } else {
       // After 18:00 — knocked off
-      label='Off Duty'; theme='Home';
+      label='Off Duty';
       const tomShift2 = getShiftForDate(tom);
-      if (tomShift2 === 'Day')          hours='06:00 – 18:00';
-      else if (tomShift2 === 'Night')   hours='18:00 – 06:00';
-      else if (tomShift2 === 'Standby') hours='Standby from 06:00';
-      else                              hours='';
+      if (tomShift2 === 'Day')          { hours='06:00 – 18:00'; theme='Day'; }
+      else if (tomShift2 === 'Night')   { hours='18:00 – 06:00'; theme='Night'; }
+      else if (tomShift2 === 'Standby') { hours='Standby from 06:00'; theme='Standby'; }
+      else                              { hours=''; theme='Home'; }
     }
 
   } else if (todayShift === 'Night') {
@@ -887,7 +1107,7 @@ function updateHero() {
       label='Night Shift'; hours='18:00 – 06:00'; theme='Night';
     } else {
       // Standby → Night: waiting for tonight
-      label='Off Duty'; hours='Night shift starts at 18:00'; theme='Home';
+      label='Off Duty'; hours='Night shift starts at 18:00'; theme='Night';
     }
 
   } else if (todayShift === 'Standby') {
@@ -1144,6 +1364,143 @@ function buildPHPanel() {
     }).join('');
 }
 
+// ── Harbour Weather ──────────────────────────────────────────
+const HARBOUR_AIR_LAT = -29.9122, HARBOUR_AIR_LON = 30.9756;   // Island View, Durban
+const HARBOUR_SEA_LAT = -29.8567, HARBOUR_SEA_LON = 31.0600;   // Durban Golden Mile, open coast
+const HARBOUR_REFRESH_MS = 60 * 60 * 1000; // 1 hour
+const HARBOUR_CACHE_KEY = 'harbourWeatherCache';
+let harbourData = { air: null, marine: null, updatedAt: null };
+
+function openWeatherModal() {
+  document.getElementById('weatherModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWeatherModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('weatherModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function compassLabel(deg) {
+  if (deg === null || deg === undefined) return '--';
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+function weatherIcon(code, isDay) {
+  const day = isDay !== 0;
+  if (code === 0) return day ? '\u2600\ufe0f' : '\ud83c\udf19';
+  if (code === 1) return day ? '\ud83c\udf24\ufe0f' : '\ud83c\udf19';
+  if (code === 2) return day ? '\u26c5' : '\u2601\ufe0f';
+  if (code === 3) return '\u2601\ufe0f';
+  if (code === 45 || code === 48) return '\ud83c\udf2b\ufe0f';
+  if ([51,53,55,56,57].includes(code)) return '\ud83c\udf26\ufe0f';
+  if ([61,63,65,66,67].includes(code)) return '\ud83c\udf27\ufe0f';
+  if ([71,73,75,77].includes(code)) return '\u2744\ufe0f';
+  if ([80,81,82].includes(code)) return '\ud83c\udf26\ufe0f';
+  if ([85,86].includes(code)) return '\ud83c\udf28\ufe0f';
+  if ([95,96,99].includes(code)) return '\u26c8\ufe0f';
+  return '\ud83c\udf21\ufe0f';
+}
+
+function weatherLabel(code) {
+  const map = {0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',
+    51:'Light drizzle',53:'Drizzle',55:'Dense drizzle',56:'Freezing drizzle',57:'Freezing drizzle',
+    61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Freezing rain',
+    71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',
+    80:'Rain showers',81:'Rain showers',82:'Heavy showers',85:'Snow showers',86:'Snow showers',
+    95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+  return map[code] || '--';
+}
+
+function renderHarbourWeather() {
+  const iconEl = document.getElementById('weatherIcon');
+  const tempEl = document.getElementById('weatherTemp');
+  const { air, marine, updatedAt } = harbourData;
+
+  // Corner badge: icon + temp only
+  if (air) {
+    tempEl.textContent = air.temperature_2m != null ? Math.round(air.temperature_2m) + '\u00b0' : '--\u00b0';
+    iconEl.textContent = weatherIcon(air.weather_code, air.is_day);
+  } else {
+    tempEl.textContent = '--\u00b0';
+  }
+
+  // Modal rows
+  const condIconEl = document.getElementById('wmConditionIcon');
+  if (air) condIconEl.textContent = weatherIcon(air.weather_code, air.is_day);
+  document.getElementById('wmCondition').textContent = air ? weatherLabel(air.weather_code) : '--';
+  document.getElementById('wmPrecip').textContent = air?.precipitation_probability != null ? Math.round(air.precipitation_probability) + '%' : '--';
+
+  const windSpd = air?.wind_speed_10m != null ? Math.round(air.wind_speed_10m) : null;
+  document.getElementById('wmWind').textContent = windSpd != null ? `${windSpd} km/h ${compassLabel(air?.wind_direction_10m)}` : '--';
+  document.getElementById('wmHumidity').textContent = air?.relative_humidity_2m != null ? Math.round(air.relative_humidity_2m) + '%' : '--';
+  document.getElementById('wmSeaTemp').textContent = marine?.sea_surface_temperature != null ? marine.sea_surface_temperature.toFixed(1) + '\u00b0C' : '--';
+  document.getElementById('wmWave').textContent = marine?.wave_height != null ? marine.wave_height.toFixed(1) + 'm' : '--';
+  document.getElementById('wmSwell').textContent = marine?.swell_wave_height != null ? marine.swell_wave_height.toFixed(1) + 'm' : '--';
+
+  const updatedEl = document.getElementById('wmUpdated');
+  if (updatedAt) {
+    const mins = Math.max(0, Math.round((Date.now() - updatedAt) / 60000));
+    updatedEl.textContent = mins < 1 ? 'Updated just now' : `Updated ${mins} min ago`;
+  } else {
+    updatedEl.textContent = location.protocol === 'file:' ? 'Loads on Pages' : (air || marine ? '' : 'Data unavailable');
+  }
+}
+
+async function fetchHarbourWeather() {
+  if (location.protocol === 'file:') {
+    renderHarbourWeather();
+    return;
+  }
+  const airUrl = `https://api.open-meteo.com/v1/forecast?latitude=${HARBOUR_AIR_LAT}&longitude=${HARBOUR_AIR_LON}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code,is_day&hourly=precipitation_probability&forecast_days=1&wind_speed_unit=kmh&timezone=Africa%2FJohannesburg`;
+  const seaUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${HARBOUR_SEA_LAT}&longitude=${HARBOUR_SEA_LON}&current=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,sea_surface_temperature&cell_selection=sea&timezone=Africa%2FJohannesburg`;
+
+  const results = await Promise.allSettled([
+    fetch(airUrl).then(r => r.ok ? r.json() : Promise.reject(new Error('air HTTP ' + r.status))),
+    fetch(seaUrl).then(r => r.ok ? r.json() : Promise.reject(new Error('marine HTTP ' + r.status)))
+  ]);
+
+  if (results[0].status === 'rejected') console.error('Harbour air fetch failed:', results[0].reason);
+  if (results[1].status === 'rejected') console.error('Harbour marine fetch failed:', results[1].reason);
+
+  let newAir = null;
+  if (results[0].status === 'fulfilled' && results[0].value?.current) {
+    newAir = { ...results[0].value.current };
+    const hourly = results[0].value.hourly;
+    if (hourly?.time && hourly?.precipitation_probability) {
+      const curTime = newAir.time || '';
+      const curPrefix = curTime.slice(0, 13); // "YYYY-MM-DDTHH"
+      let idx = hourly.time.findIndex(t => t.slice(0, 13) === curPrefix);
+      if (idx < 0 && curTime) {
+        const curMs = new Date(curTime).getTime();
+        let bestDiff = Infinity;
+        hourly.time.forEach((t, i) => {
+          const diff = Math.abs(new Date(t).getTime() - curMs);
+          if (diff < bestDiff) { bestDiff = diff; idx = i; }
+        });
+      }
+      newAir.precipitation_probability = idx >= 0 ? hourly.precipitation_probability[idx] : null;
+    }
+  }
+  const newMarine = results[1].status === 'fulfilled' && results[1].value?.current ? results[1].value.current : null;
+
+  if (newAir || newMarine) {
+    harbourData = {
+      air: newAir || harbourData.air,
+      marine: newMarine || harbourData.marine,
+      updatedAt: Date.now()
+    };
+    try { localStorage.setItem(HARBOUR_CACHE_KEY, JSON.stringify(harbourData)); } catch(e) {}
+  } else if (!harbourData.updatedAt) {
+    let cached = null;
+    try { cached = JSON.parse(localStorage.getItem(HARBOUR_CACHE_KEY)); } catch(e2) {}
+    if (cached) harbourData = cached;
+  }
+  renderHarbourWeather();
+}
+
 // ── Init ──────────────────────────────────────────────────────
 const saved = getTeam();
 if (saved) {
@@ -1154,6 +1511,18 @@ if (saved) {
   updateHero();
   buildWeekView();
   buildPHPanel();
+
+  let harbourCached = null;
+  try { harbourCached = JSON.parse(localStorage.getItem(HARBOUR_CACHE_KEY)); } catch(e) {}
+  if (harbourCached) { harbourData = harbourCached; renderHarbourWeather(); }
+  fetchHarbourWeather();
+  setInterval(fetchHarbourWeather, HARBOUR_REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const staleMs = harbourData.updatedAt ? Date.now() - harbourData.updatedAt : Infinity;
+      if (staleMs > 15 * 60 * 1000) fetchHarbourWeather();
+    }
+  });
 } else {
   document.getElementById('app').style.display = 'none';
 }
@@ -1162,6 +1531,7 @@ setInterval(()=>{
   document.getElementById('countdown').textContent = fmtCountdown(nextChange(new Date())-new Date());
 }, 1000);
 setInterval(updateHero, 60000);
+setInterval(renderHarbourWeather, 60000);
 
 // ── Service Worker ────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
