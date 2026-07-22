@@ -1044,6 +1044,7 @@ function confirmTeam() {
   buildWeekView();
   buildMonthView();
   buildPHPanel();
+  onDatePick(document.getElementById('datePicker').value);
   if (!harbourData.updatedAt) fetchHarbourWeather();
   if (navigator.vibrate) navigator.vibrate([10,40,10]);
 }
