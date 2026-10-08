@@ -1,6 +1,6 @@
 {
   "name": "Shift Tracker",
-  "short_name": "Shifts",
+  "short_name": "Shift Tracker",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#111318",
@@ -17,5 +17,6 @@
       "type": "image/png"
     }
   ],
-  "scope": "./"
+  "scope": "./",
+  "id": "./"
 }
