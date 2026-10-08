@@ -1,5 +1,6 @@
 {
   "name": "Shift Tracker",
+  "id": "./",
   "short_name": "Shift Tracker",
   "start_url": "./",
   "display": "standalone",
@@ -25,6 +26,5 @@
       "purpose": "maskable"
     }
   ],
-  "scope": "./",
-  "id": "./"
+  "scope": "./"
 }
