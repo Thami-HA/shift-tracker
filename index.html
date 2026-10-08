@@ -877,6 +877,13 @@ body {
 .port-map-head { position:relative; justify-content:center; text-align:center; min-height:60px; }
 .port-map-head .pm-icon { position:absolute; left:16px; top:50%; margin-top:-16px; }
 
+/* Search date box: whole box opens the calendar, dark-mode picker, visible blue icon */
+.date-wrap { position:relative; margin-bottom:12px; }
+.date-picker { color-scheme: dark; margin-bottom:0; padding-right:52px; position:relative; min-height:48px; }
+.date-picker::-webkit-calendar-picker-indicator { position:absolute; inset:0; width:auto; height:auto; opacity:0; cursor:pointer; }
+.date-icon { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#03a9f4; pointer-events:none; }
+.date-wrap:active .date-icon { transform:translateY(-50%) scale(.9); }
+
 /* Port tab */
 .port-view { display:none; }
 .port-view.active { display:block; }
@@ -1100,7 +1107,10 @@ body {
 
   <div class="search-view" id="searchView">
     <div class="search-label">Select a date</div>
-    <input type="date" id="datePicker" class="date-picker" onchange="onDatePick(this.value)">
+    <div class="date-wrap">
+      <input type="date" id="datePicker" class="date-picker" onchange="onDatePick(this.value)" onclick="try{this.showPicker()}catch(e){}">
+      <svg class="date-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2"/></svg>
+    </div>
     <div id="searchResult"></div>
   </div>
 
@@ -1285,6 +1295,7 @@ function confirmTeam() {
 function applyTeam() {
   document.getElementById('headerTitle').textContent = 'Shift Tracker';
   document.getElementById('teamBadge').textContent = selectedTeam || '\u2013';
+  loadLeave();   // switch to this team's own leave plan
 }
 
 // ── Hero ─────────────────────────────────────────────────────
@@ -1401,11 +1412,24 @@ let leaveSet = new Set();
 let lastToggledKey = null;
 let monthAnimDir = null;
 
+// Leave is saved per team (liteLeave_A … liteLeave_D), so it only shows on the team it was planned for.
+function leaveKey() { return 'liteLeave_' + selectedTeam; }
 function loadLeave() {
-  try { leaveSet = new Set(JSON.parse(localStorage.getItem('liteLeave') || '[]')); } catch(e) { leaveSet = new Set(); }
+  leaveSet = new Set();
+  if (!selectedTeam) return;
+  try {
+    // One-time move: leave saved before per-team storage belongs to the team currently selected
+    const old = localStorage.getItem('liteLeave');
+    if (old !== null) {
+      if (localStorage.getItem(leaveKey()) === null) localStorage.setItem(leaveKey(), old);
+      localStorage.removeItem('liteLeave');
+    }
+    leaveSet = new Set(JSON.parse(localStorage.getItem(leaveKey()) || '[]'));
+  } catch(e) { leaveSet = new Set(); }
 }
 function saveLeave() {
-  try { localStorage.setItem('liteLeave', JSON.stringify([...leaveSet])); } catch(e) {}
+  if (!selectedTeam) return;
+  try { localStorage.setItem(leaveKey(), JSON.stringify([...leaveSet])); } catch(e) {}
 }
 function isLeave(d) { return leaveSet.has(dateKey(d)); }
 // Only Night and Day shifts use up a leave day
