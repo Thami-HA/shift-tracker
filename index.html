@@ -884,6 +884,15 @@ body {
 .date-icon { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#03a9f4; pointer-events:none; }
 .date-wrap:active .date-icon { transform:translateY(-50%) scale(.9); }
 
+/* Hero: quiet "on duty now" line */
+.hero-hours { margin-bottom: 6px; }
+.hero-duty { font-size:11px; letter-spacing:.04em; color:#7d808a; margin-bottom:16px; min-height:14px; }
+.hero-duty b { color:#c5c7cc; font-weight:500; }
+/* Tomorrow card: larger plain shift icon, no background, no motion */
+#tomorrowVal { display:flex; align-items:center; gap:9px; }
+.tm-ic { display:inline-flex; flex-shrink:0; }
+.tm-ic svg { animation:none !important; }
+
 /* Port tab */
 .port-view { display:none; }
 .port-view.active { display:block; }
@@ -1048,6 +1057,7 @@ body {
         </div>
       </div>
       <div class="hero-hours" id="heroHours"></div>
+      <div class="hero-duty" id="heroDuty"></div>
     </div>
     <div class="stats-row">
       <div class="stat-cell">
@@ -1129,8 +1139,8 @@ body {
         <div class="port-map-lock" onclick="nudgePortCta()" aria-hidden="true"></div>
       </div>
     </div>
-    <a class="port-cta" id="portCta" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13/shownames:true/vtypes:8" target="_blank" rel="noopener">Open full map in MarineTraffic</a>
-    <div class="port-updated">Map by MarineTraffic &middot; the button opens tankers only.</div>
+    <a class="port-cta" id="portCta" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13" target="_blank" rel="noopener">Open full map in MarineTraffic</a>
+    <div class="port-updated">Map by MarineTraffic. If it doesn't load, use the button above.</div>
   </div>
 </div>
 
@@ -1377,7 +1387,32 @@ function updateHero() {
   const tShift = getShiftForDate(tom);
   const tLabels = { Day:'Day', Night:'Night', Standby:'Standby', Rest:'Rest' };
   const tomLeave = isLeave(tom) && leaveCosts(tShift);
-  document.getElementById('tomorrowVal').textContent = tomLeave ? 'Leave' : (tLabels[tShift] || tShift);
+  const tKey = tomLeave ? 'Leave' : tShift;
+  document.getElementById('tomorrowVal').innerHTML =
+    `<span class="tm-ic" style="color:${TOMORROW_COLOR[tKey] || '#9da0a8'}">${shiftIcon(tKey, 22)}</span><span>${tomLeave ? 'Leave' : (tLabels[tShift] || tShift)}</span>`;
+
+  // On duty now: Day team 06:00–18:00, Night team 18:00–06:00 (after midnight it's still last night's team)
+  const duty = teamOnDuty(now);
+  document.getElementById('heroDuty').innerHTML = duty
+    ? `On duty now · <b>Team ${duty.team}</b> · ${duty.shift}` : '';
+}
+
+// ── Team on duty ──────────────────────────────────────────────
+const TOMORROW_COLOR = { Night:'#6d82ff', Day:'#ffa726', Standby:'#26a69a', Rest:'#66bb6a', Leave:'#ce93d8' };
+function shiftForTeam(team, date) {
+  const keep = selectedTeam;
+  selectedTeam = team;
+  const s = getShiftForDate(date);
+  selectedTeam = keep;
+  return s;
+}
+function teamOnDuty(now) {
+  const h = now.getHours();
+  const t = today0();
+  const shift = (h >= 6 && h < 18) ? 'Day' : 'Night';
+  const date = h < 6 ? addDays(t, -1) : t;
+  const team = ['A','B','C','D'].find(x => shiftForTeam(x, date) === shift);
+  return team ? { team, shift } : null;
 }
 
 // ── Week ─────────────────────────────────────────────────────
