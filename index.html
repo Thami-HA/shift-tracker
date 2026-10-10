@@ -893,6 +893,9 @@ body {
 .tm-ic { display:inline-flex; flex-shrink:0; }
 .tm-ic svg { animation:none !important; }
 
+/* Off Duty house icon stays still */
+.hero-icon.off-duty svg { animation: none !important; }
+
 /* Port tab opens MarineTraffic directly */
 a.tab-link { display:block; text-decoration:none; }
 
@@ -1357,9 +1360,14 @@ function updateHero() {
     label = 'On Leave'; hours = 'Enjoy your time off'; theme = 'Leave';
   }
   document.body.className = `shift-${theme}`;
-  if (theme !== lastHeroTheme) {
-    document.getElementById('heroIcon').innerHTML = shiftIcon(theme, 15);
-    lastHeroTheme = theme;
+  // Off Duty shows a house, tinted in the colour of the shift that's coming up (colour comes from theme)
+  const offDuty = label === 'Off Duty';
+  const iconKey = (offDuty ? 'Home:' : '') + theme;
+  if (iconKey !== lastHeroTheme) {
+    const heroIconEl = document.getElementById('heroIcon');
+    heroIconEl.innerHTML = shiftIcon(offDuty ? 'Home' : theme, 15);
+    heroIconEl.classList.toggle('off-duty', offDuty);
+    lastHeroTheme = iconKey;
   }
   document.getElementById('heroStatus').textContent = label;
   document.getElementById('heroHours').textContent  = hours;
