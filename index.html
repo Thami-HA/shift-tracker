@@ -893,6 +893,9 @@ body {
 .tm-ic { display:inline-flex; flex-shrink:0; }
 .tm-ic svg { animation:none !important; }
 
+/* Port tab opens MarineTraffic directly */
+a.tab-link { display:block; text-decoration:none; }
+
 /* Port tab */
 .port-view { display:none; }
 .port-view.active { display:block; }
@@ -1075,7 +1078,7 @@ body {
     <button class="tab active" data-tab="week" onclick="switchTab('week')">Week</button>
     <button class="tab" data-tab="month" onclick="switchTab('month')">Month</button>
     <button class="tab" data-tab="search" onclick="switchTab('search')">Search</button>
-    <button class="tab" data-tab="port" onclick="switchTab('port')">Port</button>
+    <a class="tab tab-link" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13" target="_blank" rel="noopener">Port</a>
   </div>
 
   <div class="week-view active" id="weekView">
@@ -1124,24 +1127,6 @@ body {
     <div id="searchResult"></div>
   </div>
 
-  <div class="port-view" id="portView">
-    <div class="port-map-card">
-      <div class="port-map-head">
-        <div class="pm-icon" id="pmIcon"></div>
-        <div>
-          <div class="port-title">Tankers in port</div>
-          <div class="port-sub">Port of Durban &middot; live positions</div>
-        </div>
-      </div>
-      <div class="port-map-wrap">
-        <iframe id="portMap" title="Tankers in the Port of Durban" loading="lazy" referrerpolicy="no-referrer-when-downgrade" tabindex="-1"></iframe>
-        <div class="port-map-loading" id="portMapLoading">Loading map&hellip;</div>
-        <div class="port-map-lock" onclick="nudgePortCta()" aria-hidden="true"></div>
-      </div>
-    </div>
-    <a class="port-cta" id="portCta" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13" target="_blank" rel="noopener">Open full map in MarineTraffic</a>
-    <div class="port-updated">Map by MarineTraffic. If it doesn't load, use the button above.</div>
-  </div>
 </div>
 
 <script>
@@ -1729,7 +1714,7 @@ function onDatePick(val) {
 // ── Tabs ──────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  ['week','month','search','port'].forEach(v =>
+  ['week','month','search'].forEach(v =>
     document.getElementById(v + 'View').classList.toggle('active', v === tab));
   if (tab==='month') buildMonthView();
   if (tab==='search') {
@@ -1738,7 +1723,6 @@ function switchTab(tab) {
     const picker = document.getElementById('datePicker');
     if (!picker.value) { picker.value=iso; onDatePick(iso); }
   }
-  if (tab==='port') loadPortMap();
 }
 
 // ── SA Public Holidays (Dynamic Easter) ──────────────────────
@@ -1905,31 +1889,6 @@ function renderHarbourWeather() {
   if (air) badge.classList.add('loaded');
 }
 
-// ── Port tab: MarineTraffic live map, same view as the original link ──
-// Durban port, zoom 13, tankers only (vessel type 8), ship names on
-const PORT_MAP_URL = 'https://www.marinetraffic.com/en/ais/embed/zoom:13/centery:-29.890/centerx:31.032/maptype:4/shownames:true/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:8/showmenu:false/remember:false';
-function loadPortMap() {
-  const frame = document.getElementById('portMap');
-  if (!frame || frame.dataset.loaded) return;
-  frame.dataset.loaded = '1';
-  frame.addEventListener('load', () => document.getElementById('portMapLoading').classList.add('hide'), { once:true });
-  frame.src = PORT_MAP_URL;
-}
-
-// Tapping the locked map points to the full-map button
-function nudgePortCta() {
-  const cta = document.getElementById('portCta');
-  cta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  cta.classList.remove('nudge'); void cta.offsetWidth; cta.classList.add('nudge');
-  if (navigator.vibrate) navigator.vibrate(10);
-}
-
-function initPortIcons() {
-  const put = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-  put('pmIcon', svgIcon('anchor', 16));
-  put('portCta', `${svgIcon('anchor', 16)} Open full map in MarineTraffic`);
-}
-initPortIcons();
 
 async function fetchHarbourWeather() {
   if (location.protocol === 'file:') {
