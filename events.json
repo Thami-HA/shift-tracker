@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "updated": "2026-10-29T17:20:47+02:00",
+  "events": [
+    {
+      "id": "evt-20261015-124913",
+      "title": "SHE Committee Q2 Meetings - Jan 2027",
+      "body": "Teams + Boardroom · both 10h00 · A&B Tue 12 Jan, C&D Fri 15 Jan · Contact your shift SHE rep",
+      "teams": "all",
+      "priority": "important",
+      "date": "2027-01-12",
+      "expires": "2027-01-16",
+      "created": "2026-10-15T12:49:13+02:00",
+      "posted_by": "Omuhle",
+      "category": "safety"
+    },
+    {
+      "id": "evt-20261015-124821",
+      "title": "SHE Committee Meeting - A&B Shift",
+      "body": "Teams + Boardroom · 10h00–12h00 · Bring signed rep books · Terryl Tatchell (SHE Co-ord)",
+      "teams": [
+        "A",
+        "B"
+      ],
+      "priority": "important",
+      "date": "2026-10-20",
+      "expires": "2026-10-21",
+      "created": "2026-10-15T12:48:21+02:00",
+      "posted_by": "Omuhle",
+      "category": "safety"
+    },
+    {
+      "id": "evt-20261014-123830",
+      "title": "BTT Sports Day — Richards Bay",
+      "body": "Umhlathuze Sports Complex, RB Central · 09:00 · Mbali Gumede 035 797 6702",
+      "teams": "all",
+      "priority": "info",
+      "date": "2026-10-31",
+      "expires": "2026-11-01",
+      "created": "2026-10-14T12:38:30+02:00",
+      "posted_by": "Omuhle",
+      "category": "sport"
+    },
+    {
+      "id": "evt-20261010-009",
+      "title": "EXPIRED TEST — must never appear",
+      "body": "If you can read this in the app, expiry filtering is broken.",
+      "teams": "all",
+      "priority": "urgent",
+      "date": null,
+      "expires": "2026-10-11",
+      "created": "2026-10-10T09:00:00+02:00",
+      "posted_by": "Omuhle"
+    },
+    {
+      "id": "evt-20261029-172047",
+      "title": "BTT Children's Bursary 2027 — now open",
+      "body": "Applications close 08 Feb 2027 · grades 7–12 + first tertiary qualifications (new: grades 7–9) · up to R30 000/yr school, R90 000/yr tertiary · For more details contact your supervisor",
+      "teams": "all",
+      "priority": "info",
+      "expires": "2027-02-09",
+      "created": "2026-10-29T17:20:47+02:00",
+      "posted_by": "Omuhle",
+      "category": "bursary"
+    }
+  ]
+}

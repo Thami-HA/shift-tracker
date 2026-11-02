@@ -62,6 +62,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 32px 24px;
+  padding-top: max(32px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
   animation: fadeIn 0.3s ease;
 }
 .onboarding.hidden { display: none; }
@@ -145,6 +147,11 @@ body {
   max-width: 430px;
   margin: 0 auto;
   padding: 16px 14px 48px;
+  /* iPhones with a notch / Dynamic Island report safe areas; other phones report 0, so nothing changes there */
+  padding-top: max(16px, calc(env(safe-area-inset-top, 0px) - 18px));
+  padding-left: max(14px, env(safe-area-inset-left, 0px));
+  padding-right: max(14px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(48px, calc(env(safe-area-inset-bottom, 0px) + 24px));
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -159,12 +166,6 @@ body {
   font-size: 20px;
   font-weight: 500;
   color: var(--ha-text-primary);
-}
-
-.header-sub {
-  font-size: 11px;
-  color: var(--ha-text-secondary);
-  margin-top: 1px;
 }
 
 .header-date {
@@ -415,7 +416,7 @@ body {
   transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.nav-btn:hover  { background: var(--ha-card-bg2); }
+.nav-btn:hover { background: var(--ha-card-bg2); }
 .nav-btn:active { opacity: 0.7; }
 
 .cal-wrap {
@@ -456,11 +457,11 @@ body {
   position: relative;
 }
 .cal-cell:nth-child(7n) { border-right: none; }
-.cal-cell-empty   { background: transparent; }
-.cal-cell-Night   { background: rgba(61,90,254,0.12); }
-.cal-cell-Day     { background: rgba(255,143,0,0.12); }
+.cal-cell-empty { background: transparent; }
+.cal-cell-Night { background: rgba(61,90,254,0.12); }
+.cal-cell-Day { background: rgba(255,143,0,0.12); }
 .cal-cell-Standby { background: rgba(0,137,123,0.12); }
-.cal-cell-Rest    { background: rgba(67,160,71,0.12); }
+.cal-cell-Rest { background: rgba(67,160,71,0.12); }
 
 .cal-num {
   font-size: 11px;
@@ -489,19 +490,23 @@ body {
 
 .legend {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   margin-top: 10px;
   padding: 0 2px;
 }
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10px;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: clamp(9px, 2.6vw, 10px);
   color: var(--ha-text-secondary);
 }
 .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+/* Month calendar: browser keeps vertical scrolling, sideways swipes change month */
+#calWrap { touch-action: pan-y; }
 
 /* ── Search ───────────────────────────────────────────────── */
 .search-label {
@@ -570,24 +575,10 @@ body {
 .result-ph-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; color: #FFC107; }
 
 /* ── Change team pill ─────────────────────────────────────── */
-.change-team-btn {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--ha-border);
-  background: var(--ha-card-bg2);
-  color: var(--ha-text-secondary);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
-}
-.change-team-btn:active { background: var(--ha-border); }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
 /* ── Public Holiday Panel ─────────────────────────────────── */
-.ph-panel { margin-top: 12px; }
 .ph-panel-title {
   font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
   text-transform: uppercase; color: #9da0a8;
@@ -613,6 +604,8 @@ body {
   font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase;
 }
 .ph-card-right { text-align: right; flex-shrink: 0; }
+.ph-ic { flex-shrink:0; width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:#FFC1071f; }
+.ph-card-left { flex:1; min-width:0; }
 .ph-hours-val {
   font-family: 'Roboto Mono', monospace; font-size: 18px;
   font-weight: 400; color: #e1e1e1; line-height: 1; margin-bottom: 2px;
@@ -636,11 +629,6 @@ body {
 
 /* ── Week card PH (B+C) ───────────────────────────────────── */
 
-.ph-card-dot {
-  position: absolute; top: 6px; right: 6px;
-  width: 6px; height: 6px; border-radius: 50%; background: #FFC107;
-}
-
 /* ══════════ v2 upgrade: depth, motion, icons, leave ══════════ */
 :root { --shift-leave:#ab47bc; --shift-leave-bg:rgba(171,71,188,0.15); --leave-soft:#ce93d8; }
 .ico { display:inline-block; vertical-align:-2px; flex-shrink:0; }
@@ -663,12 +651,12 @@ body {
   content:''; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
   background: radial-gradient(circle at var(--gx,18%) var(--gy,0%), rgba(255,255,255,.07), transparent 55%);
 }
-.shift-Night .hero-card   { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(61,90,254,.4); }
-.shift-Day .hero-card     { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(255,143,0,.35); }
+.shift-Night .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(61,90,254,.4); }
+.shift-Day .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(255,143,0,.35); }
 .shift-Standby .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(0,137,123,.4); }
-.shift-Rest .hero-card    { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(67,160,71,.35); }
-.shift-Home .hero-card    { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(3,155,229,.35); }
-.shift-Leave .hero-card   { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(171,71,188,.45); }
+.shift-Rest .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(67,160,71,.35); }
+.shift-Home .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(3,155,229,.35); }
+.shift-Leave .hero-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.45), 0 14px 44px -14px rgba(171,71,188,.45); }
 .shift-Leave .hero-color-bar { background:#ab47bc; }
 
 .hero-label { display:flex; align-items:center; gap:8px; }
@@ -679,21 +667,15 @@ body {
   transition: background .4s, color .4s;
 }
 .hero-icon svg { animation: iconFloat 4s ease-in-out infinite; }
-.shift-Night .hero-icon   { color:#6d82ff; background:rgba(61,90,254,.16); }
-.shift-Day .hero-icon     { color:#ffa726; background:rgba(255,143,0,.16); }
+.shift-Night .hero-icon { color:#6d82ff; background:rgba(61,90,254,.16); }
+.shift-Day .hero-icon { color:#ffa726; background:rgba(255,143,0,.16); }
 .shift-Standby .hero-icon { color:#26a69a; background:rgba(0,137,123,.18); }
-.shift-Rest .hero-icon    { color:#66bb6a; background:rgba(67,160,71,.16); }
-.shift-Home .hero-icon    { color:#29b6f6; background:rgba(3,155,229,.16); }
-.shift-Leave .hero-icon   { color:var(--leave-soft); background:var(--shift-leave-bg); }
+.shift-Rest .hero-icon { color:#66bb6a; background:rgba(67,160,71,.16); }
+.shift-Home .hero-icon { color:#29b6f6; background:rgba(3,155,229,.16); }
+.shift-Leave .hero-icon { color:var(--leave-soft); background:var(--shift-leave-bg); }
 
 /* Weather icons */
-.weather-widget { z-index:2; }
-.weather-widget.loaded { animation: fadeIn .45s ease; }
-.weather-icon { display:inline-flex; line-height:1; }
-.weather-humidity { display:flex; align-items:center; justify-content:flex-end; gap:4px; }
-.weather-wind { justify-content:flex-end; }
-.weather-humidity .ico { color:#4fc3f7; }
-.wind-arrow { display:inline-flex; color:#80cbc4; }
+
 .w-sun { color:#ffb300; } .w-moon { color:#9fa8da; } .w-partly { color:#ffca28; }
 .w-cloud { color:#b0bec5; } .w-rain { color:#4fc3f7; } .w-storm { color:#ffca28; } .w-fog { color:#90a4ae; }
 
@@ -701,7 +683,7 @@ body {
 .tabs { box-shadow: inset 0 1px 3px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.03); }
 .tab { transition: background .25s, color .25s, box-shadow .25s; }
 .tab.active { box-shadow: 0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06); }
-.week-view.active, .month-view.active, .search-view.active, .port-view.active { animation: viewIn .32s ease backwards; }
+.week-view.active, .month-view.active, .search-view.active { animation: viewIn .32s ease backwards; }
 
 /* Week cards */
 .day-card {
@@ -722,20 +704,21 @@ body {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 6px 16px rgba(0,0,0,.4), 0 20px 40px -24px rgba(0,0,0,.6);
 }
 .cal-grid.anim-in .cal-cell { animation: cellIn .3s ease backwards; animation-delay: calc(var(--i, 0) * 8ms); }
-.cal-grid.anim-left  { animation: slideL .3s cubic-bezier(.2,.8,.2,1); }
+.cal-grid.anim-left { animation: slideL .3s cubic-bezier(.2,.8,.2,1); }
 .cal-grid.anim-right { animation: slideR .3s cubic-bezier(.2,.8,.2,1); }
 .cal-cell { transition: background .2s; }
-.cal-cell.is-leave {
+.cal-wrap.leave-mode .cal-cell.is-leave {
   background: repeating-linear-gradient(135deg, rgba(171,71,188,.30) 0 6px, rgba(171,71,188,.17) 6px 12px) !important;
   box-shadow: inset 0 0 0 1.5px rgba(186,104,200,.75);
 }
-.cal-cell.is-leave .cal-shift-label { color:#f3e5f5 !important; }
-.cal-cell.is-leave-free { outline: 1.5px dashed rgba(186,104,200,.6); outline-offset:-4px; }
+.cal-wrap.leave-mode .cal-cell.is-leave .cal-shift-label { color:#f3e5f5 !important; }
+.cal-cell.is-leave .cal-shift-label { color:#ce93d8 !important; font-weight:700; }
+
+.cal-wrap.leave-mode .cal-cell.is-leave-free { outline: 1.5px dashed rgba(186,104,200,.6); outline-offset:-4px; }
 .cal-cell.just-toggled { animation: popIn .3s cubic-bezier(.3,1.6,.5,1); }
 .cal-wrap.leave-mode { box-shadow: 0 0 0 1.5px rgba(186,104,200,.55), 0 12px 32px -10px rgba(171,71,188,.45); }
 .cal-wrap.leave-mode .cal-cell:not(.cal-cell-empty) { cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cal-wrap.leave-mode .cal-cell:not(.cal-cell-empty):active { transform: scale(.94); }
-.legend-leave { background: repeating-linear-gradient(135deg, #ab47bc 0 2px, rgba(171,71,188,.4) 2px 4px); border-radius:2px !important; width:8px !important; height:8px !important; }
 
 /* Leave planner */
 .leave-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; min-height:34px; }
@@ -755,21 +738,7 @@ body {
   margin:18px 2px 8px;
 }
 .section-title > span { display:inline-flex; align-items:center; gap:6px; }
-.text-btn { background:none; border:none; color:var(--leave-soft); font: 500 11px 'Roboto', sans-serif; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; padding:4px 2px; }
-.leave-card {
-  background: linear-gradient(180deg, rgba(171,71,188,.09), rgba(171,71,188,0) 70%), var(--ha-card-bg);
-  border:1px solid rgba(186,104,200,.22); border-radius:12px; overflow:hidden;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 6px 16px rgba(0,0,0,.4);
-  animation: riseIn .4s ease backwards;
-}
-.leave-stats { display:grid; grid-template-columns:1fr 1fr; }
-.ls { padding:14px 16px; }
-.ls:first-child { border-right:1px solid var(--ha-divider); }
-.ls-val { font-family:'Roboto Mono', monospace; font-size:24px; color:#e1bee7; line-height:1; }
-.ls-lbl { font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ha-text-secondary); margin-top:6px; }
-.leave-range { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 16px; border-top:1px solid var(--ha-divider); }
-.lr-dates { font-size:13px; color:var(--ha-text-primary); }
-.lr-meta { font-size:11px; color:var(--leave-soft); font-family:'Roboto Mono', monospace; white-space:nowrap; }
+
 .leave-empty { font-size:12px; line-height:1.55; color:var(--ha-text-secondary); padding:14px 16px; background:var(--ha-card-bg); border:1px dashed rgba(186,104,200,.3); border-radius:12px; }
 .leave-empty b { color:var(--leave-soft); font-weight:500; }
 
@@ -777,8 +746,6 @@ body {
 .ph-card { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 12px rgba(0,0,0,.35); animation: riseIn .4s ease backwards; }
 .ph-shift-chip { display:inline-flex; align-items:center; gap:4px; }
 .ph-hours-val.leave { color:var(--leave-soft); font-size:16px; }
-
-
 
 /* Hero weather badge */
 .weather-badge { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:5px; padding-top:2px; position:relative; z-index:2; }
@@ -791,26 +758,9 @@ body {
 .wb-row .wb-arrow { color:#80cbc4; display:inline-flex; transition: transform .6s ease; }
 .weather-badge.loaded { animation: fadeIn .45s ease; }
 
-/* Port tab: live vessel map */
-.port-map-card {
-  border-radius:12px; overflow:hidden; border:1px solid rgba(79,195,247,.18);
-  background: linear-gradient(180deg, rgba(79,195,247,.06), rgba(79,195,247,0)), var(--ha-card-bg);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 6px 16px rgba(0,0,0,.4), 0 18px 40px -20px rgba(3,169,244,.35);
-  animation: riseIn .4s ease backwards;
-}
-.port-map-head { display:flex; align-items:center; gap:10px; padding:14px 16px 12px; }
-.port-map-head .pm-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#4fc3f7; background:rgba(79,195,247,.14); }
-.port-map-wrap { position:relative; height:62vh; min-height:360px; max-height:620px; background:#0d1b26; border-top:1px solid var(--ha-divider); }
-.port-map-wrap { overflow:hidden; }
 /* MarineTraffic's own bottom bar (site name + iOS/Android links) is pushed out of view */
-.port-map-wrap iframe { position:absolute; top:0; left:0; width:100%; height:calc(100% + 38px); border:0; }
-.port-map-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--ha-text-secondary); pointer-events:none; animation: tick 1.6s ease-in-out infinite; }
-.port-map-loading.hide { display:none; }
-/* Locked map: a clear layer on top stops dragging and zooming */
-.port-map-lock { position:absolute; inset:0; z-index:2; cursor:default; -webkit-tap-highlight-color:transparent; }
-.port-cta.nudge { animation: ctaNudge .6s cubic-bezier(.3,1.6,.5,1); }
-@keyframes ctaNudge { 0%,100% { transform:scale(1); } 40% { transform:scale(1.05); box-shadow:0 6px 22px -2px rgba(3,169,244,.7); } }
 
+/* Locked map: a clear layer on top stops dragging and zooming */
 
 /* Header: option B */
 .header { padding:6px 4px 18px; }
@@ -849,8 +799,6 @@ body {
 .ts-btn:active { transform:scale(.94); }
 
 /* Leave card: rows only, purple fade across the card */
-.leave-card { background: linear-gradient(180deg, rgba(171,71,188,.14), rgba(171,71,188,.02) 100%), var(--ha-card-bg); }
-.leave-card .leave-range:first-child { border-top:none; }
 
 /* Leave edit mode: clear button + hint */
 .leave-bar { margin-bottom:8px; justify-content:center; gap:10px; }
@@ -872,10 +820,6 @@ body {
 .cal-dow-row { border-bottom-color: rgba(255,255,255,.13); }
 .cal-cell-Night   .cal-shift-label { color:#6d82ff; }
 .cal-cell-Standby .cal-shift-label { color:#26a69a; }
-
-/* Port header: text centred across the card, anchor kept on the left */
-.port-map-head { position:relative; justify-content:center; text-align:center; min-height:60px; }
-.port-map-head .pm-icon { position:absolute; left:16px; top:50%; margin-top:-16px; }
 
 /* Search date box: whole box opens the calendar, dark-mode picker, visible blue icon */
 .date-wrap { position:relative; margin-bottom:12px; }
@@ -901,55 +845,53 @@ body {
 .brand-corner { position:absolute; top:max(env(safe-area-inset-top,0px),22px); left:22px; }
 .brand-corner img { display:block; height:34px; width:auto; }
 
+/* Week view: Events / Notifications */
+.events-panel { margin-top:12px; }
+.ev-card .ph-card-body { flex-direction:column; align-items:stretch; gap:3px; }
+
+.ev-title { font-size:13px; font-weight:500; color:#e1e1e1; line-height:1.35; }
+.ev-chip { display:inline-block; padding:1px 6px; border-radius:20px; font-size:9px; font-weight:500; letter-spacing:.03em; vertical-align:2px; margin-left:4px; white-space:nowrap; }
+.ev-chip-date { background:rgba(255,255,255,.06); color:#c5c7cc; margin-left:0; margin-right:6px; }
+.ev-chip-urgent { background:rgba(255,82,82,.15); color:#FF5252; text-transform:uppercase; }
+.ev-chip-new { background:rgba(79,195,247,.14); color:#4fc3f7; text-transform:uppercase; animation: tick 2s ease-in-out infinite; }
+.ev-chip-team { background:rgba(255,255,255,.06); color:#9da0a8; flex-shrink:0; margin-left:0; }
+.ev-body { font-size:12px; color:#9da0a8; line-height:1.45; }
+.ev-foot { font-size:10px; color:#6b6e75; margin-top:2px; }
+.tab[data-tab="week"] { position:relative; }
+.tab[data-tab="week"].has-ev-dot::after { content:''; position:absolute; top:5px; right:10px; width:6px; height:6px; border-radius:50%; background:#FF5252; }
+
+/* Events marked on the calendars */
+   /* week cards use the holiday icon instead */
+.ev-day-mark { display:flex; align-items:center; justify-content:center; gap:3px; margin-top:7px; }
+.ev-day-ic { width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center; }
+
+/* Month: event dots sit top-right like the holiday dot, stacked below it on a holiday */
+.ev-cell-dots { position:absolute; top:3px; right:3px; display:flex; flex-direction:column; gap:2px; pointer-events:none; }
+.cal-cell.is-ph .ev-cell-dots { top:10px; }
+.ev-cell-dots i { width:5px; height:5px; border-radius:50%; display:block; }
+
+/* Events: tap to mark as read */
+.ev-card { cursor:pointer; -webkit-tap-highlight-color:transparent; transition: opacity .25s ease, transform .15s ease; }
+.ev-card:active { transform: scale(.985); }
+.ev-card.ev-read .ev-chip-new { display:none; }
+.ev-card .ph-card-body { flex-direction:row; align-items:center; gap:12px; }
+.ev-card.ev-special { cursor:default; }
+.ev-card.ev-special:active { transform:none; }
+.ev-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.ev-icon { flex-shrink:0; width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+.ev-foot { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+
+/* Month view: month name and Plan leave on one line, centred between the arrows */
+.month-view .month-nav-row { margin-top:0; margin-bottom:10px; gap:8px; }
+.month-center { flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:10px; }
+.month-center .month-title { font-size:15px; white-space:nowrap; }
+.month-center .leave-toggle { padding:6px 12px; white-space:nowrap; flex-shrink:0; }
+.month-view .leave-bar { min-height:0; margin:0 0 6px; }
+.month-view .leave-bar:not(:has(.leave-clear.show)) { display:none; }
+.month-view .leave-hint.show { margin:0 2px 10px; }
+
 /* Port tab opens MarineTraffic directly */
 a.tab-link { display:block; text-decoration:none; }
-
-/* Port tab */
-.port-view { display:none; }
-.port-view.active { display:block; }
-.port-hero {
-  position:relative; overflow:hidden; border-radius:12px; padding:18px 18px 16px;
-  border:1px solid rgba(79,195,247,.18);
-  background: radial-gradient(circle at 88% 0%, rgba(79,195,247,.16), transparent 60%), linear-gradient(180deg, rgba(79,195,247,.06), rgba(79,195,247,0)), var(--ha-card-bg);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 6px 16px rgba(0,0,0,.4), 0 18px 40px -20px rgba(3,169,244,.35);
-  animation: riseIn .4s ease backwards;
-}
-.port-hero-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-.port-title { font-size:16px; font-weight:500; color:var(--ha-text-primary); }
-.port-sub { font-size:11px; color:var(--ha-text-secondary); margin-top:2px; }
-.port-hero-icon { display:inline-flex; filter: drop-shadow(0 4px 10px rgba(0,0,0,.45)); }
-.port-hero-icon svg { animation: iconFloat 5s ease-in-out infinite; }
-.port-temp-row { display:flex; align-items:baseline; gap:10px; margin-top:4px; }
-.port-temp { font-size:48px; font-weight:300; line-height:1; color:var(--ha-text-primary); }
-.port-cond { font-size:14px; color:var(--ha-text-secondary); }
-.port-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.port-tile {
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), var(--ha-card-bg);
-  border:1px solid var(--ha-border); border-radius:12px; padding:12px 10px 11px; min-width:0;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 10px rgba(0,0,0,.35);
-  animation: riseIn .4s ease backwards;
-}
-.port-grid .port-tile:nth-child(2) { animation-delay:.05s; }
-.port-grid .port-tile:nth-child(3) { animation-delay:.1s; }
-.pt-icon { width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
-.pt-icon .ico { transition: transform .6s ease; }
-.pt-rain  { color:#4fc3f7; background:rgba(79,195,247,.12); }
-.pt-wind  { color:#80cbc4; background:rgba(128,203,196,.12); }
-.pt-hum   { color:#64b5f6; background:rgba(100,181,246,.12); }
-.pt-sea   { color:#ffb74d; background:rgba(255,183,77,.12); }
-.pt-wave  { color:#4dd0e1; background:rgba(77,208,225,.12); }
-.pt-swell { color:#9fa8da; background:rgba(121,134,203,.15); }
-.pt-val { font-family:'Roboto Mono', monospace; font-size:14px; color:var(--ha-text-primary); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pt-lbl { font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ha-text-secondary); margin-top:4px; }
-.port-cta {
-  display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; padding:13px 16px;
-  border-radius:14px; background:rgba(79,195,247,.14); border:1px solid rgba(79,195,247,.4);
-  color:#4fc3f7; font-size:14px; font-weight:600; text-decoration:none;
-  box-shadow: 0 4px 14px -4px rgba(3,169,244,.4); transition: transform .15s, background .15s;
-}
-.port-cta:active { transform:scale(.98); background:rgba(79,195,247,.22); }
-.port-updated { font-size:10px; color:var(--ha-text-secondary); text-align:center; padding:10px 0 4px; }
-
 
 /* M1 weather icon matches the weather */
 .wb-icon svg { transform-origin:center; }
@@ -980,7 +922,6 @@ a.tab-link { display:block; text-decoration:none; }
 .shift-Day .hero-icon svg { animation: mSpin 18s linear infinite; }
 @keyframes mRing { 0%,78%,100% { transform: rotate(0); } 81% { transform: rotate(-14deg); } 84% { transform: rotate(12deg); } 87% { transform: rotate(-10deg); } 90% { transform: rotate(7deg); } 93% { transform: rotate(-3deg); } }
 @keyframes mRock { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
-@keyframes mSpin { to { transform: rotate(360deg); } }
 
 /* M5 countdown digits slide in */
 #countdown.ticker { animation: none; }
@@ -1000,10 +941,6 @@ a.tab-link { display:block; text-decoration:none; }
   0%,100% { box-shadow: 0 0 0 1px rgba(3,169,244,.25), 0 10px 26px -10px rgba(3,169,244,.45); }
   50% { box-shadow: 0 0 0 1px rgba(3,169,244,.5), 0 10px 30px -6px rgba(3,169,244,.75); }
 }
-
-/* M9 port anchor bobs */
-.pm-icon svg { animation: mBob 3.2s ease-in-out infinite; transform-origin: 50% 20%; }
-@keyframes mBob { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(2px) rotate(5deg); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; }
@@ -1091,22 +1028,24 @@ a.tab-link { display:block; text-decoration:none; }
     <button class="tab active" data-tab="week" onclick="switchTab('week')">Week</button>
     <button class="tab" data-tab="month" onclick="switchTab('month')">Month</button>
     <button class="tab" data-tab="search" onclick="switchTab('search')">Search</button>
-    <a class="tab tab-link" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13" target="_blank" rel="noopener">Port</a>
+    <a class="tab tab-link" href="https://www.marinetraffic.com/en/ais/home/centerx:31.032/centery:-29.890/zoom:13/shownames:true/vtypes:8" target="_blank" rel="noopener">Port</a>
   </div>
 
   <div class="week-view active" id="weekView">
     <div class="week-scroll" id="weekScroll"></div>
-    <div class="ph-panel" id="phPanel"></div>
+    <div class="events-panel" id="eventsPanel" style="display:none"></div>
   </div>
 
   <div class="month-view" id="monthView">
     <div class="month-nav-row">
       <button class="nav-btn" onclick="changeMonth(-1)" aria-label="Previous month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <div class="month-title" id="monthTitle"></div>
+      <div class="month-center">
+        <div class="month-title" id="monthTitle"></div>
+        <button class="leave-toggle" id="leaveToggle" onclick="toggleLeaveMode()">Plan leave</button>
+      </div>
       <button class="nav-btn" onclick="changeMonth(1)" aria-label="Next month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
     </div>
     <div class="leave-bar">
-      <button class="leave-toggle" id="leaveToggle" onclick="toggleLeaveMode()">Plan leave</button>
       <button class="leave-clear" id="leaveClear" onclick="clearMonthLeave()">Clear month</button>
     </div>
     <div class="leave-hint" id="leaveHint">Tap days to add or remove leave</div>
@@ -1124,8 +1063,10 @@ a.tab-link { display:block; text-decoration:none; }
       <div class="legend-item"><div class="legend-dot" style="background:var(--shift-day)"></div>Day</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--shift-standby)"></div>Standby</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--shift-rest)"></div>Rest</div>
-      <div class="legend-item"><div class="legend-dot legend-leave"></div>Leave</div>
+      
       <div class="legend-item"><div class="legend-dot" style="background:#FFC107"></div>Holiday</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c6e03a"></div>Events</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ce93d8"></div>Leave</div>
     </div>
     <div id="leaveSummary"></div>
     <div id="monthHolidays"></div>
@@ -1205,15 +1146,6 @@ function saveTeam(t) {
     window.history.replaceState({}, '', url);
   } catch(e) {}
 }
-function removeTeam() {
-  try { localStorage.removeItem('liteTeam'); } catch(e) {}
-  try {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('team');
-    window.history.replaceState({}, '', url);
-  } catch(e) {}
-}
-
 // ── Shift calc ──────────────────────────────────────────────
 function daysBetween(a,b) {
   return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) -
@@ -1293,7 +1225,7 @@ function confirmTeam() {
   updateHero();
   buildWeekView();
   buildMonthView();
-  buildPHPanel();
+  buildEventsPanel();
   onDatePick(document.getElementById('datePicker').value);
   if (!harbourData.updatedAt) fetchHarbourWeather();
   if (navigator.vibrate) navigator.vibrate([10,40,10]);
@@ -1431,9 +1363,9 @@ function buildWeekView() {
     const card = document.createElement('div');
     card.className = `day-card day-card-${shift}${i===0?' today':''}${isPHDay?' is-ph':''}${onLeave?' on-leave':''}`;
     card.style.animationDelay = `${i*45}ms`;
+    card.dataset.key = dateKey(d);
     card.innerHTML = `
       <div class="day-card-top-bar"></div>
-      ${isPHDay ? '<div class="ph-card-dot"></div>' : ''}
       <div class="day-dow">${DAY_NAMES[d.getDay()]}</div>
       <div class="day-num">${d.getDate()}</div>
       <div class="day-shift-chip">${onLeave ? svgIcon('suitcase',10) + 'Leave' : shiftIcon(shift,10) + shift}</div>
@@ -1441,6 +1373,7 @@ function buildWeekView() {
       ${i===0?'<div class="today-label">Today</div>':''}`;
     c.appendChild(card);
   }
+  paintEventMarks();
 }
 
 // ── Leave planner ─────────────────────────────────────────────
@@ -1570,13 +1503,20 @@ function buildLeaveSummary() {
     return;
   }
   const fmt = d => `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()].slice(0,3)}`;
-  const plural = n => `${n} leave day${n===1?'':'s'}`;
-  el.innerHTML = title + `<div class="leave-card">
-    ${shown.map(b => `<div class="leave-range">
-      <div class="lr-dates">${b.start.getTime()===b.end.getTime() ? fmt(b.start) : fmt(b.start) + ' – ' + fmt(b.end)}</div>
-      <div class="lr-meta">${plural(b.used)}</div>
-    </div>`).join('')}
-  </div>`;
+  const today = today0();
+  el.innerHTML = title + shown.map((b, i) => {
+    const done = b.end < today;   // whole break is in the past: plain default tile
+    return `<div class="ph-card lv-tile${done ? ' lv-done' : ''}" style="animation-delay:${i*50}ms">
+      <div class="ph-card-accent" style="background:${done ? 'rgba(255,255,255,.12)' : '#ab47bc'}"></div>
+      <div class="ph-card-body">
+        <div class="ph-ic" style="${done ? 'background:rgba(255,255,255,.06);color:#9da0a8' : 'background:#ab47bc26;color:#ce93d8'}">${svgIcon('suitcase', 17)}</div>
+        <div class="ph-card-left">
+          <div class="ph-card-name">${b.start.getTime()===b.end.getTime() ? fmt(b.start) : fmt(b.start) + ' – ' + fmt(b.end)}</div>
+        </div>
+        <div class="ph-card-right"><div class="ph-hours-val"${done ? '' : ' style="color:#ce93d8"'}>${b.used}</div><div class="ph-hours-detail">${done ? 'day' + (b.used===1?'':'s') + ' taken' : 'leave day' + (b.used===1?'':'s')}</div></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function buildMonthHolidays() {
@@ -1597,6 +1537,7 @@ function buildMonthHolidays() {
     return `<div class="ph-card" style="animation-delay:${i*50}ms">
       <div class="ph-card-accent"></div>
       <div class="ph-card-body">
+        ${phTileIcon(ph.name)}
         <div class="ph-card-left">
           <div class="ph-card-name">${ph.name}${obsTag}</div>
           <div class="ph-card-date">${dateStr} &nbsp;·&nbsp; <span class="ph-shift-chip" style="${chipColor}">${shiftIcon(shift,10)} ${shift}</span></div>
@@ -1675,6 +1616,7 @@ function buildMonthView(noAnim) {
     const cell    = document.createElement('div');
     cell.className = `cal-cell cal-cell-${shift}${isToday?' is-today':''}${isPH?' is-ph':''}${leave ? (cost ? ' is-leave' : ' is-leave-free') : ''}${key===lastToggledKey?' just-toggled':''}`;
     cell.style.setProperty('--i', day);
+    cell.dataset.key = key;
     cell.innerHTML = `
       ${isPH ? '<div class="ph-cell-dot"></div>' : ''}
       <div class="cal-num">${day}</div>
@@ -1683,10 +1625,35 @@ function buildMonthView(noAnim) {
     grid.appendChild(cell);
   }
   lastToggledKey = null;
+  paintEventMarks();
   buildLeaveSummary();
   renderLeaveModeUI();
   buildMonthHolidays();
 }
+
+// Swipe the calendar sideways to change month. Only a clear, mostly-sideways swipe counts,
+// so vertical scrolling and taps (leave planning) work as before.
+(function calendarSwipe() {
+  const wrap = document.getElementById('calWrap');
+  if (!wrap) return;
+  let x0 = null, y0 = 0, t0 = 0, swipedAt = 0;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  wrap.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - t0 > 800) return;
+    swipedAt = Date.now();
+    changeMonth(dx < 0 ? 1 : -1);
+    if (navigator.vibrate) navigator.vibrate(6);
+  }, { passive: true });
+  wrap.addEventListener('touchcancel', () => { x0 = null; }, { passive: true });
+  // A swipe must never also count as a tap on a day
+  wrap.addEventListener('click', e => { if (Date.now() - swipedAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
 
 function changeMonth(dir) {
   viewMonth = new Date(viewMonth.getFullYear(),viewMonth.getMonth()+dir,1);
@@ -1735,6 +1702,7 @@ function switchTab(tab) {
   ['week','month','search'].forEach(v =>
     document.getElementById(v + 'View').classList.toggle('active', v === tab));
   if (tab==='month') buildMonthView();
+  if (tab==='week' && Date.now() - eventsFetchedAt > EVENTS_STALE_MS) loadEvents();
   if (tab==='search') {
     const t   = today0();
     const iso = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -1826,37 +1794,6 @@ function calcPHHours(holidayDate) {
     }
   }
   return { hours, shift, chipColor };
-}
-
-function buildPHPanel() {
-  const panel = document.getElementById('phPanel');
-  if (!panel) return;
-  const holidays = getHolidaysInRange(today0(), 30);
-  if (holidays.length === 0) {
-    panel.innerHTML = '<div class="ph-empty">No public holidays in the next 30 days</div>';
-    return;
-  }
-  const DS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  panel.innerHTML = '<div class="ph-panel-title">🇿🇦 Public Holidays</div>' +
-    holidays.map(ph => {
-      const { hours, shift, chipColor } = calcPHHours(ph.date);
-      const dateStr = `${DS[ph.date.getDay()]} ${ph.date.getDate()} ${MS[ph.date.getMonth()]}`;
-      const obsTag  = ph.observed ? '<span class="ph-observed-tag">observed</span>' : '';
-      return `<div class="ph-card">
-        <div class="ph-card-accent"></div>
-        <div class="ph-card-body">
-          <div class="ph-card-left">
-            <div class="ph-card-name">${ph.name}${obsTag}</div>
-            <div class="ph-card-date">${dateStr} &nbsp;·&nbsp; <span class="ph-shift-chip" style="${chipColor}">${shiftIcon(shift,10)} ${shift}</span></div>
-          </div>
-          <div class="ph-card-right">
-            <div class="ph-hours-val${hours===0?' zero':''}">${hours}</div>
-            <div class="ph-hours-detail">hours</div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
 }
 
 // ── Harbour Weather ──────────────────────────────────────────
@@ -1960,6 +1897,301 @@ async function fetchHarbourWeather() {
   renderHarbourWeather();
 }
 
+// ── Events / Notifications (events.json, posted by Omuhle) ────
+const EVENTS_STALE_MS = 10 * 60 * 1000;
+const EVENTS_MAX = 8;
+const EVENT_ACCENT = { urgent:'#FF5252' };
+let eventsCache = null;          // parsed events.json, or null if not loaded
+let eventsFetchedAt = 0;
+// ?events=<url> override for testing — same site only, so outside files can't pose as notices
+let EVENTS_URL = 'events.json';
+try {
+  const o = new URLSearchParams(location.search).get('events');
+  if (o) {
+    const u = new URL(o, location.href);
+    if (u.origin === location.origin) EVENTS_URL = u.href;
+    else console.warn('Events: ignoring ?events= from another site');
+  }
+} catch (e) { console.warn('Events: bad ?events= value'); }
+
+function evEsc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Read marks are saved on this phone only (like leave), keyed by event id
+const EVENTS_READ_KEY = 'liteEventsRead';
+let eventsRead = new Set();
+try { eventsRead = new Set(JSON.parse(localStorage.getItem(EVENTS_READ_KEY) || '[]')); } catch (e) {}
+function saveEventsRead() { try { localStorage.setItem(EVENTS_READ_KEY, JSON.stringify([...eventsRead])); } catch (e) {} }
+function evKey(ev) { return ev.id != null && String(ev.id).trim() ? 'id:' + String(ev.id) : 'k:' + [ev.title, ev.created, ev.date].join('|'); }
+function evIsRead(ev) { return eventsRead.has(evKey(ev)); }
+function evNeedsAttention(ev) { return !evIsRead(ev) && (ev.priority === 'urgent' || evIsNew(ev)); }
+function updateEventsDot() {
+  const weekTab = document.querySelector('.tab[data-tab="week"]');
+  if (weekTab) weekTab.classList.toggle('has-ev-dot', !!eventsCache && visibleEvents().some(evNeedsAttention));
+}
+function toggleEventRead(card) {
+  const key = card.dataset.evkey;
+  if (!key) return;
+  if (eventsRead.has(key)) return;            // already read: nothing happens (for now)
+  eventsRead.add(key);
+  saveEventsRead();
+  card.classList.add('ev-read');
+  updateEventsDot();
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+document.addEventListener('click', e => {
+  const card = e.target.closest && e.target.closest('#eventsPanel .ev-card');
+  if (card) toggleEventRead(card);
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest && e.target.closest('#eventsPanel .ev-card');
+  if (card) { e.preventDefault(); toggleEventRead(card); }
+});
+
+const EVENT_ICONS = {
+  sport:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  union:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  social:'<rect x="3" y="9" width="18" height="6" rx="1"/><path d="M7 9v6M11 9v6M15 9v6M19 9v6M5 15l-1 6M19 15l1 6"/><path d="M8 2.5c-1 1.3 1 2.2 0 3.5M12 2.5c-1 1.3 1 2.2 0 3.5M16 2.5c-1 1.3 1 2.2 0 3.5"/>',
+  work:'<path d="M2 18h20"/><path d="M4 18v-2a8 8 0 0 1 16 0v2"/><path d="M10 6V4h4v2M9 8v5M15 8v5"/>',
+  safety:'<path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M12 8v5M12 16h.01"/>',
+  training:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6"/>',
+  celebration:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8c-2-4-6-4-6-1.5S10 8 12 8zM12 8c2-4 6-4 6-1.5S14 8 12 8z"/>',
+  notice:'<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>',
+  roadshow:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8M7 12l3-3 2 2 4-4"/>',
+  wellness:'<path d="M4 4v6a5 5 0 0 0 10 0V4M4 4h2M12 4h2M9 15v1a5 5 0 0 0 10 0v-3"/><circle cx="19" cy="11" r="2"/>',
+  yearend:'<path d="M4 21l5-14 8 8z"/><path d="M14 3c0 2 1 3 3 3M19 8h2M16 2v2M21 13c-2-1-4 0-4 0M12 6c1-1 1-2 0-3"/>',
+  longservice:'<rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M7 8h10M7 11h6"/><circle cx="16" cy="15" r="2.5"/><path d="M14.8 17.2L14 21l2-1 2 1-.8-3.8"/>',
+  bursary:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6"/>'
+};
+// Spaces, dashes and underscores are ignored, so "year-end", "year_end" and "Year End" all match yearend
+const EVENT_ICON_ALIASES = { sports:'sport', braai:'social', party:'celebration', meeting:'union', unionmeeting:'union', notices:'notice', announcement:'notice',
+  wellnessday:'wellness', yearendparty:'yearend', endofyear:'yearend', longserviceaward:'longservice', longserviceawards:'longservice',
+  bursaries:'bursary', bursaryscheme:'bursary', scholarship:'bursary' };
+function evCategory(ev) {
+  const c = String(ev.category || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
+  const k = EVENT_ICON_ALIASES[c] || c;
+  return EVENT_ICONS[k] ? k : 'notice';
+}
+// Strip + icon colour comes from the type of event; priority "urgent" overrides it with red
+const EVENT_COLOUR = '#c6e03a';   // every event is lime (company colour); red is kept for urgent
+function evColour(ev) { return ev.priority === 'urgent' ? EVENT_ACCENT.urgent : EVENT_COLOUR; }
+// Dated events for this team, by day (no 30-day limit, so the Month view can show further ahead)
+// Icon per South African public holiday (yellow, like the holiday dot)
+const HOLIDAY_ICONS = {
+  "New Year's Day":'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
+  "Human Rights Day":'<path d="M12 3v17M7 20h10M4 7h16"/><path d="M4 7l-2.5 6a2.5 2.5 0 0 0 5 0zM20 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/>',
+  "Good Friday":'<path d="M10.5 2h3v6h5v3h-5v11h-3V11h-5V8h5z"/>',
+  "Family Day":'<circle cx="7" cy="5" r="2"/><circle cx="17" cy="5" r="2"/><circle cx="12" cy="11.5" r="1.6"/><path d="M4 21v-7a3 3 0 0 1 6 0v7M14 21v-7a3 3 0 0 1 6 0v7M10.5 21v-3.5a1.5 1.5 0 0 1 3 0V21"/>',
+  "Freedom Day":'<rect x="3" y="14" width="18" height="7" rx="1.5"/><path d="M8 14h8"/><path d="M8 15V3h8v12"/><path d="M10.2 6.2l3.6 3.6M13.8 6.2l-3.6 3.6"/>',
+  "Workers' Day":'<path d="M2 18h20"/><path d="M4 18v-2a8 8 0 0 1 16 0v2"/><path d="M10 6V4h4v2M9 8v5M15 8v5"/>',
+  "Youth Day":'<rect x="4" y="3" width="16" height="10" rx="1.5"/><path d="M12 13v9M8 7h8M8 10h5"/>',
+  "National Women's Day":'<circle cx="12" cy="9" r="6"/><path d="M12 15v7M9 19h6"/>',
+  "Heritage Day":'<path d="M10.5 2.5c4.20 3.32 5.6 6.65 5.6 9.5s-1.40 6.17-5.6 9.5c-4.20-3.32-5.6-6.65-5.6-9.5s1.40-6.17 5.6-9.5z"/><path d="M10.5 1.2v21.6"/><rect x="7.5" y="7.2" width="2" height="2.8" rx=".5" fill="#FFC107" stroke="none"/><rect x="11.5" y="10.6" width="2" height="2.8" rx=".5" fill="#FFC107" stroke="none"/><rect x="7.5" y="14" width="2" height="2.8" rx=".5" fill="#FFC107" stroke="none"/><path d="M2.5 21.5L5.6 18.4M16.4 7.6L17.8 6.2"/><path d="M17.8 6.2c-.2-2.4 1.2-4.2 4.4-4.7-.4 3.1-2 4.6-4.4 4.7z"/>',
+  "Day of Reconciliation":'<path d="M11 17l2 2a1 1 0 1 0 3-3"/><path d="M14 14l2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="M21 3l1 11h-2"/><path d="M3 3L2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/>',
+  "Christmas Day":'<path d="M12 2l5 7h-3l4 6h-4l3 4H7l3-4H6l4-6H7z"/><path d="M12 19v3"/>',
+  "Day of Goodwill":'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8c-2-4-6-4-6-1.5S10 8 12 8zM12 8c2-4 6-4 6-1.5S14 8 12 8z"/>'
+};
+// Special days we celebrate that are not public holidays: icon on Week cards only (no Month dot, no holiday pay)
+const SPECIAL_DAYS = [
+  { name:"Valentine's Day", colour:'#FF5252', when:y => new Date(y, 1, 14),  icon:'<path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21.5l8.8-8.8a5 5 0 0 0 0-7.1z"/>' },
+  { name:"April Fools' Day", colour:'#b0b3ba', when:y => new Date(y, 3, 1),   icon:'<circle cx="12" cy="12" r="10"/><path d="M8 14.5a5 5 0 0 0 8 0"/><path d="M8.5 9.5h1.5"/><path d="M14 8.5l1.5 1.5L14 11.5"/>' },
+  { name:"Easter Sunday",    colour:'#b0b3ba', when:y => { const gf = getHolidaysForYear(y).find(h => h.name === 'Good Friday'); return new Date(y, gf.month - 1, gf.day + 2); }, icon:'<path d="M12 22c-4 0-7-3-7-7.5C5 9 8 2 12 2s7 7 7 12.5c0 4.5-3 7.5-7 7.5z"/><path d="M5.5 12l2.5 1.5 2-1.5 2 1.5 2-1.5 2 1.5 2.5-1.5"/>' },
+  { name:"Mother's Day",     colour:'#b0b3ba', when:y => nthSunday(y, 4, 2), icon:'<path d="M12 22V12"/><path d="M12 12c-4 0-6-3-6-6 1.5 1 3 1 4 0 .5 1.5 1.3 2 2 2 .7 0 1.5-.5 2-2 1 1 2.5 1 4 0 0 3-2 6-6 6z"/><path d="M12 18c-2 0-3.5-1-4-3M12 17c2 0 3.5-1 4-3"/>' },
+  { name:"Father's Day",     colour:'#b0b3ba', when:y => nthSunday(y, 5, 3), icon:'<path d="M10 3h4l-1 3h-2z"/><path d="M11 6l-2.5 11L12 21l3.5-4L13 6"/>' },
+  { name:"Mandela Day",      colour:'#b0b3ba', when:y => new Date(y, 6, 18),  icon:'<path d="M12 4.6l-.9-.9a2.4 2.4 0 0 0-3.4 3.4L12 11.4l4.3-4.3a2.4 2.4 0 0 0-3.4-3.4z"/><path d="M2 15h3l3 2h4a1.5 1.5 0 0 1 0 3H9"/><path d="M5 21H2M14.5 18.5l5-2.5a1.5 1.5 0 0 1 2 2l-6 4H5"/>' },
+  { name:"Spring Day",       colour:'#81c784', when:y => new Date(y, 8, 1),   icon:'<circle cx="12" cy="8" r="2"/><path d="M12 6a2.5 2.5 0 1 1 3.5 2A2.5 2.5 0 1 1 14 12a2.5 2.5 0 1 1-4 0 2.5 2.5 0 1 1-1.5-4A2.5 2.5 0 1 1 12 6z"/><path d="M12 12v10M12 18c-2.5 0-4-1.5-4-3.5 2.5 0 4 1.5 4 3.5zM12 17c2.5 0 4-1.5 4-3.5-2.5 0-4 1.5-4 3.5z"/>' },
+  { name:"New Year's Eve",   colour:'#b0b3ba', when:y => new Date(y, 11, 31), icon:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6M12 2v3"/>' }
+];
+function nthSunday(y, m, n) { const first = new Date(y, m, 1); return new Date(y, m, 1 + (7 - first.getDay()) % 7 + 7 * (n - 1)); }
+function specialDayFor(d) { const key = dateKey(d); return SPECIAL_DAYS.find(sd => dateKey(sd.when(d.getFullYear())) === key) || null; }
+
+function phTileIcon(name) {
+  return `<div class="ph-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFC107" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${HOLIDAY_ICONS[name] || ICON_PATHS.flag}</svg></div>`;
+}
+// Special days coming up in the next 7 days, for the Events list
+function upcomingSpecialDays() {
+  const out = [], t = today0();
+  for (let i = 0; i < 7; i++) { const d = addDays(t, i), sd = specialDayFor(d); if (sd) out.push({ sd, date: d }); }
+  return out;
+}
+
+function holidayNameFor(d) {
+  const y = d.getFullYear(), key = dateKey(d);
+  const ph = getHolidaysForYear(y).find(h => dateKey(getObservedDate(y, h.month, h.day)) === key);
+  return ph ? ph.name : null;
+}
+function dayIcon(paths, colour) {
+  return `<div class="ev-day-ic" style="background:${colour}1f"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg></div>`;
+}
+
+function eventsByDay() {
+  const map = {};
+  if (!eventsCache || !Array.isArray(eventsCache.events) || !selectedTeam) return map;
+  const today = dateKey(today0());
+  eventsCache.events.forEach(ev => {
+    if (!ev || typeof ev !== 'object') return;
+    if (!String(ev.title || '').trim() && !String(ev.body || '').trim()) return;
+    const date = evIsoDate(ev.date), exp = evIsoDate(ev.expires), teams = evTeams(ev);
+    if (!date || date < today || (exp && today > exp) || (teams && !teams.includes(selectedTeam))) return;
+    (map[date] = map[date] || []).push(ev);
+  });
+  return map;
+}
+function paintEventMarks() {
+  const byDay = eventsByDay();
+  document.querySelectorAll('#weekScroll .day-card').forEach(card => {
+    card.querySelectorAll('.ev-day-mark').forEach(n => n.remove());
+    const list = byDay[card.dataset.key] || [];
+    const icons = [];
+    if (card.classList.contains('is-ph')) {
+      const [y, m, d] = card.dataset.key.split('-').map(Number);
+      icons.push(dayIcon(HOLIDAY_ICONS[holidayNameFor(new Date(y, m - 1, d))] || ICON_PATHS.flag, '#FFC107'));
+    }
+    { const [y, m, d] = card.dataset.key.split('-').map(Number), sd = specialDayFor(new Date(y, m - 1, d));
+      if (sd) icons.push(dayIcon(sd.icon, sd.colour)); }
+    // One icon per different type of event (two braais on one day = one icon)
+    const seen = new Set();
+    list.forEach(ev => { const c = evCategory(ev); if (!seen.has(c)) { seen.add(c); icons.push(dayIcon(EVENT_ICONS[c], evColour(ev))); } });
+    if (icons.length) card.insertAdjacentHTML('beforeend', `<div class="ev-day-mark">${icons.slice(0, 3).join('')}</div>`);
+  });
+  document.querySelectorAll('#calGrid .cal-cell[data-key]').forEach(cell => {
+    cell.querySelectorAll('.ev-cell-dots').forEach(n => n.remove());
+    const list = byDay[cell.dataset.key] || [];
+    const cols = list.length ? [EVENT_COLOUR] : [];   // month view: one pink dot for events
+    if (!cols.length) return;
+    cell.insertAdjacentHTML('beforeend', `<div class="ev-cell-dots">${cols.map(c => `<i style="background:${c}"></i>`).join('')}</div>`);
+  });
+}
+
+function evIconSvg(ev, colour) {
+  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${EVENT_ICONS[evCategory(ev)]}</svg>`;
+}
+
+function evIsoDate(v) { return (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) ? v : null; }
+function evIsNew(ev) {
+  const t = Date.parse(ev.created);
+  return !isNaN(t) && Date.now() - t < 48 * 3600 * 1000 && Date.now() - t > -3600 * 1000;
+}
+function evTeams(ev) {
+  if (!Array.isArray(ev.teams)) return null;          // "all", null or missing → everyone
+  return ev.teams.map(t => String(t).trim().toUpperCase()).filter(t => /^[ABCD]$/.test(t));
+}
+function visibleEvents() {
+  if (!eventsCache || !Array.isArray(eventsCache.events) || !selectedTeam) return [];
+  const today = dateKey(today0()), until = dateKey(addDays(today0(), 14));
+  const list = eventsCache.events.filter(ev => {
+    if (!ev || typeof ev !== 'object') return false;
+    if (!String(ev.title || '').trim() && !String(ev.body || '').trim()) return false;   // skip blank entries
+    const teams = evTeams(ev);
+    if (teams && !teams.includes(selectedTeam)) return false;
+    const exp = evIsoDate(ev.expires);
+    if (exp && today > exp) return false;
+    const date = evIsoDate(ev.date);
+    if (date && (date < today || date > until)) return false;
+    return true;
+  });
+  const created = ev => { const t = Date.parse(ev.created); return isNaN(t) ? 0 : t; };
+  const undated = list.filter(ev => !evIsoDate(ev.date)).sort((a, b) => created(b) - created(a));
+  const dated = list.filter(ev => evIsoDate(ev.date)).sort((a, b) => evIsoDate(a.date) < evIsoDate(b.date) ? -1 : evIsoDate(a.date) > evIsoDate(b.date) ? 1 : 0);
+  return undated.concat(dated).slice(0, EVENTS_MAX);
+}
+function buildEventsPanel() {
+  const panel = document.getElementById('eventsPanel');
+  const weekTab = document.querySelector('.tab[data-tab="week"]');
+  if (!panel) return;
+  const specials = selectedTeam ? upcomingSpecialDays().concat(getHolidaysInRange(today0(), 7).map(ph => {
+    const { hours, shift } = calcPHHours(ph.date);
+    const foot = isLeave(ph.date) && leaveCosts(shift) ? 'Public holiday · on leave' : `Public holiday · ${shift} · ${hours} hour${hours===1?'':'s'}`;
+    return { date: ph.date, sd: { name: ph.name, colour: '#FFC107', icon: HOLIDAY_ICONS[ph.name] || ICON_PATHS.flag, foot } };
+  })).sort((a, b) => a.date - b.date) : [];
+  if ((!eventsCache && !specials.length) || !selectedTeam) {
+    panel.style.display = 'none';
+    if (weekTab) weekTab.classList.remove('has-ev-dot');
+    return;
+  }
+  const list = visibleEvents();
+  const title = '<div class="ph-panel-title"><svg class="ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-1px;margin-right:6px"><path d="M12 17v5"/><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3z"/></svg>Noticeboard</div>';
+  if (!list.length && !specials.length) {
+    panel.innerHTML = title + '<div class="ph-empty">No active events</div>';
+  } else {
+    const specialTile = ({ sd, date }) => `<div class="ph-card ev-card ev-special">
+        <div class="ph-card-accent" style="background:${sd.colour}"></div>
+        <div class="ph-card-body">
+          <div class="ev-main">
+            <div class="ev-title"><span class="ev-chip ev-chip-date">${DAY_NAMES[date.getDay()]} ${date.getDate()} ${MONTH_NAMES[date.getMonth()].slice(0,3)}</span>${sd.name}</div>
+            ${sd.foot ? `<div class="ev-foot">${sd.foot}</div>` : ''}
+          </div>
+          <div class="ev-icon" style="background:${sd.colour}1f"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${sd.colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${sd.icon}</svg></div>
+        </div>
+      </div>`;
+    const pending = specials.slice();
+    panel.innerHTML = title + list.map((ev, i) => {
+      // Slot special days in date order among the dated events
+      let pre = '';
+      const evDate = evIsoDate(ev.date);
+      if (evDate) while (pending.length && dateKey(pending[0].date) <= evDate) pre += specialTile(pending.shift());
+      return pre + (() => {
+      const pr = ev.priority === 'urgent' ? 'urgent' : 'info', col = evColour(ev);
+      const date = evIsoDate(ev.date);
+      let dateChip = '';
+      if (date) {
+        const [y, m, d] = date.split('-').map(Number), dt = new Date(y, m - 1, d);
+        dateChip = `<span class="ev-chip ev-chip-date">${DAY_NAMES[dt.getDay()]} ${dt.getDate()} ${MONTH_NAMES[dt.getMonth()].slice(0,3)}</span>`;
+      }
+      const teams = evTeams(ev);
+      const teamChip = teams && teams.length ? `<span class="ev-chip ev-chip-team">Team ${teams.join('+')}</span>` : '';
+      const ct = Date.parse(ev.created);
+      const posted = isNaN(ct) ? '' : ` · posted ${new Date(ct).getDate()} ${MONTH_NAMES[new Date(ct).getMonth()].slice(0,3)}`;
+      const read = evIsRead(ev);
+      return `<div class="ph-card ev-card${read ? ' ev-read' : ''}" data-evkey="${evEsc(evKey(ev))}" role="button" tabindex="0" aria-label="${evEsc(ev.title || 'Notice')}" style="animation-delay:${i*50}ms">
+        <div class="ph-card-accent" style="background:${col}"></div>
+        <div class="ph-card-body">
+          <div class="ev-main">
+            <div class="ev-title">${dateChip}${evEsc(ev.title || '')}${pr === 'urgent' ? '<span class="ev-chip ev-chip-urgent">Urgent</span>' : ''}${evIsNew(ev) ? '<span class="ev-chip ev-chip-new">New</span>' : ''}</div>
+            ${ev.body ? `<div class="ev-body">${evEsc(ev.body)}</div>` : ''}
+            <div class="ev-foot">${evEsc(ev.posted_by || 'Omuhle')}${posted}${teamChip}</div>
+          </div>
+          <div class="ev-icon" style="background:${col}1f">${evIconSvg(ev, col)}</div>
+        </div>
+      </div>`;
+      })();
+    }).join('') + pending.map(specialTile).join('');
+  }
+  panel.style.display = '';
+  // Red dot on the Week tab when there's anything urgent or new for this team
+  if (weekTab) weekTab.classList.toggle('has-ev-dot', list.some(evNeedsAttention));
+}
+// Last downloaded events.json, kept on this phone so Coming up appears instantly (and without signal)
+const EVENTS_SAVED_KEY = 'liteEventsSaved';
+const EVENTS_SAVE_OK = EVENTS_URL === 'events.json';   // never save a ?events= test file
+function loadSavedEvents() {
+  if (!EVENTS_SAVE_OK) return;
+  try { const d = JSON.parse(localStorage.getItem(EVENTS_SAVED_KEY) || 'null'); if (d && Array.isArray(d.events)) eventsCache = d; } catch (e) {}
+}
+async function loadEvents() {
+  eventsFetchedAt = Date.now();
+  try {
+    const u = new URL(EVENTS_URL, location.href);
+    u.searchParams.set('t', Date.now());
+    const res = await fetch(u.href, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data || typeof data !== 'object' || !Array.isArray(data.events)) throw new Error('unexpected format');
+    eventsCache = data;
+    if (EVENTS_SAVE_OK) { try { localStorage.setItem(EVENTS_SAVED_KEY, JSON.stringify(data)); } catch (e) {} }
+    const live = new Set(data.events.filter(ev => ev && typeof ev === 'object').map(evKey));
+    const before = eventsRead.size;
+    eventsRead.forEach(k => { if (!live.has(k)) eventsRead.delete(k); });
+    if (eventsRead.size !== before) saveEventsRead();
+  } catch (e) {
+    console.warn('Events not loaded:', e && e.message ? e.message : e);
+    if (!eventsCache) eventsCache = null;   // keep showing the saved copy if there is one
+  }
+  buildEventsPanel();
+  paintEventMarks();
+}
+
 // ── Init ──────────────────────────────────────────────────────
 const saved = getTeam();
 if (saved) {
@@ -1969,7 +2201,7 @@ if (saved) {
   applyTeam();
   updateHero();
   buildWeekView();
-  buildPHPanel();
+  buildEventsPanel();
 
   let harbourCached = null;
   try { harbourCached = JSON.parse(localStorage.getItem(HARBOUR_CACHE_KEY)); } catch(e) {}
@@ -1985,6 +2217,8 @@ if (saved) {
 } else {
   document.getElementById('app').style.display = 'none';
 }
+loadSavedEvents(); buildEventsPanel(); paintEventMarks();   // instant, from the saved copy
+loadEvents();                                              // then refresh from GitHub
 
 setInterval(()=>{
   setCountdown(fmtCountdown(nextChange(new Date())-new Date()));
@@ -2015,7 +2249,7 @@ function switchTeam(team) {
     lastHeroTheme = null;
     updateHero();
     buildWeekView();
-    buildPHPanel();
+    buildEventsPanel();
     buildMonthView(true);
     onDatePick(document.getElementById('datePicker').value);
     if (navigator.vibrate) navigator.vibrate([10,40,10]);
@@ -2051,7 +2285,7 @@ function installApp() {
 }
 </script>
 
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:#1c1c1e;border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px 28px;align-items:center;justify-content:space-between;z-index:300;">
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:#1c1c1e;border-top:1px solid rgba(255,255,255,0.08);padding:12px 16px max(28px, calc(env(safe-area-inset-bottom, 0px) + 12px));align-items:center;justify-content:space-between;z-index:300;">
   <div>
     <div style="font-size:13px;font-weight:500;color:#e1e1e1;">&#x26F4;&#xFE0F; Install Shift Tracker</div>
     <div style="font-size:11px;color:#9da0a8;margin-top:2px;">Add to home screen for the full app experience</div>
