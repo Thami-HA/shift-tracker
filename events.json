@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-10-29T17:20:47+02:00",
+  "updated": "2026-11-06T18:46:47+02:00",
   "events": [
     {
       "id": "evt-20261015-124913",
@@ -62,6 +62,18 @@
       "created": "2026-10-29T17:20:47+02:00",
       "posted_by": "Omuhle",
       "category": "bursary"
+    },
+    {
+      "id": "evt-20261106-184647",
+      "title": "BTT Employee Engagement Survey 2026",
+      "body": "Electronic: emailed to your BTT inbox 11 Nov · closes 04 Dec · complete once only\nOn-site Durban: D Thu 12 Nov · B Fri 13 Nov · A Tue 17 Nov · C Wed 18 Nov — 09:00–16:00\nVenue confirmed by regional HR · Contact your supervisor",
+      "teams": "all",
+      "priority": "important",
+      "date": "2026-11-11",
+      "expires": "2026-12-05",
+      "created": "2026-11-06T18:46:47+02:00",
+      "posted_by": "Omuhle",
+      "category": "notice"
     }
   ]
 }
