@@ -1,7 +1,71 @@
 {
   "schema": 1,
-  "updated": "2026-11-06T19:09:29+02:00",
+  "updated": "2026-11-06T22:24:59+02:00",
   "events": [
+    {
+      "id": "evt-20261106-220001",
+      "title": "BTT Employee Engagement Survey 2026 — Team D",
+      "body": "Electronic: open 11 Nov – 04 Dec · link emailed to your BTT inbox · complete once only\nOn-site Team D: Thu 12 Nov · 09:00–16:00 · only staff without a BTT email need attend\nFor more info contact your supervisor",
+      "teams": [
+        "D"
+      ],
+      "priority": "important",
+      "date": "2026-11-11",
+      "expires": "2026-12-05",
+      "created": "2026-11-06T22:00:46+02:00",
+      "posted_by": "Omuhle",
+      "category": "survey",
+      "mark": "2026-11-12",
+      "updated": "2026-11-06T22:24:59+02:00"
+    },
+    {
+      "id": "evt-20261106-220002",
+      "title": "BTT Employee Engagement Survey 2026 — Team B",
+      "body": "Electronic: open 11 Nov – 04 Dec · link emailed to your BTT inbox · complete once only\nOn-site Team B: Fri 13 Nov · 09:00–16:00 · only staff without a BTT email need attend\nFor more info contact your supervisor",
+      "teams": [
+        "B"
+      ],
+      "priority": "important",
+      "date": "2026-11-11",
+      "expires": "2026-12-05",
+      "created": "2026-11-06T22:00:46+02:00",
+      "posted_by": "Omuhle",
+      "category": "survey",
+      "mark": "2026-11-13",
+      "updated": "2026-11-06T22:24:59+02:00"
+    },
+    {
+      "id": "evt-20261106-220003",
+      "title": "BTT Employee Engagement Survey 2026 — Team A",
+      "body": "Electronic: open 11 Nov – 04 Dec · link emailed to your BTT inbox · complete once only\nOn-site Team A: Tue 17 Nov · 09:00–16:00 · only staff without a BTT email need attend\nFor more info contact your supervisor",
+      "teams": [
+        "A"
+      ],
+      "priority": "important",
+      "date": "2026-11-11",
+      "expires": "2026-12-05",
+      "created": "2026-11-06T22:00:46+02:00",
+      "posted_by": "Omuhle",
+      "category": "survey",
+      "mark": "2026-11-17",
+      "updated": "2026-11-06T22:24:59+02:00"
+    },
+    {
+      "id": "evt-20261106-220004",
+      "title": "BTT Employee Engagement Survey 2026 — Team C",
+      "body": "Electronic: open 11 Nov – 04 Dec · link emailed to your BTT inbox · complete once only\nOn-site Team C: Wed 18 Nov · 09:00–16:00 · only staff without a BTT email need attend\nFor more info contact your supervisor",
+      "teams": [
+        "C"
+      ],
+      "priority": "important",
+      "date": "2026-11-11",
+      "expires": "2026-12-05",
+      "created": "2026-11-06T22:00:46+02:00",
+      "posted_by": "Omuhle",
+      "category": "survey",
+      "mark": "2026-11-18",
+      "updated": "2026-11-06T22:24:59+02:00"
+    },
     {
       "id": "evt-20261015-124913",
       "title": "SHE Committee Q2 Meetings - Jan 2027",
