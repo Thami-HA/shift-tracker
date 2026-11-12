@@ -2032,15 +2032,31 @@ function evMarkDates(ev) {
   const arr = Array.isArray(raw) ? raw : [raw];
   return arr.map(evIsoDate).filter(Boolean);
 }
+// One rule for week icons, month dots and the Noticeboard. First field present decides:
+//   expires -> live through that day;  else mark -> through the last mark day;
+//   else date -> through that day;     else (undated notice) -> live until removed.
+function evLiveUntil(ev) {
+  const exp = evIsoDate(ev.expires);
+  if (exp) return { rule: 'expires', until: exp };
+  const marks = evMarkDates(ev), date = evIsoDate(ev.date);
+  if (ev.mark != null && ev.mark !== '' && marks.length) return { rule: 'mark', until: marks.reduce((a, b) => a > b ? a : b) };
+  if (date) return { rule: 'date', until: date };
+  return { rule: 'undated', until: null };
+}
+function isLive(ev, today) {
+  if (!ev || typeof ev !== 'object') return false;
+  if (!String(ev.title || '').trim() && !String(ev.body || '').trim()) return false;   // skip blank entries
+  const teams = evTeams(ev);
+  if (teams && !teams.includes(selectedTeam)) return false;
+  const until = evLiveUntil(ev).until;
+  return !until || today <= until;
+}
 function eventsByDay() {
   const map = {};
   if (!eventsCache || !Array.isArray(eventsCache.events) || !selectedTeam) return map;
   const today = dateKey(today0());
   eventsCache.events.forEach(ev => {
-    if (!ev || typeof ev !== 'object') return;
-    if (!String(ev.title || '').trim() && !String(ev.body || '').trim()) return;
-    const date = evIsoDate(ev.date), exp = evIsoDate(ev.expires), teams = evTeams(ev);
-    if (!date || date < today || (exp && today > exp) || (teams && !teams.includes(selectedTeam))) return;
+    if (!isLive(ev, today) || !evIsoDate(ev.date)) return;
     evMarkDates(ev).forEach(md => {
       if (md < today) return;
       (map[md] = map[md] || []).push(ev);
@@ -2091,15 +2107,9 @@ function visibleEvents() {
   if (!eventsCache || !Array.isArray(eventsCache.events) || !selectedTeam) return [];
   const today = dateKey(today0()), until = dateKey(addDays(today0(), 14));
   const list = eventsCache.events.filter(ev => {
-    if (!ev || typeof ev !== 'object') return false;
-    if (!String(ev.title || '').trim() && !String(ev.body || '').trim()) return false;   // skip blank entries
-    const teams = evTeams(ev);
-    if (teams && !teams.includes(selectedTeam)) return false;
-    const exp = evIsoDate(ev.expires);
-    if (exp && today > exp) return false;
+    if (!isLive(ev, today)) return false;
     const date = evIsoDate(ev.date);
-    if (date && (date < today || date > until)) return false;
-    return true;
+    return !(date && date > until);   // dated events appear from 14 days before
   });
   const created = ev => { const t = Date.parse(ev.created); return isNaN(t) ? 0 : t; };
   const undated = list.filter(ev => !evIsoDate(ev.date)).sort((a, b) => created(b) - created(a));
