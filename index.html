@@ -2095,6 +2095,18 @@ function evIconSvg(ev, colour) {
 }
 
 function evIsoDate(v) { return (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) ? v : null; }
+// Line-level expiry for multi-part bodies: an "On-site Team ..." line lives on ev.date (the team's
+// on-site day) and drops the day after, while the rest of the body (e.g. an electronic survey still
+// open) keeps showing. Convention for curated events: date = that event's on-site day.
+// Guards: no On-site line, no usable date, or still on the day itself -> body unchanged.
+function evBodyLive(ev) {
+  const body = String(ev.body == null ? '' : ev.body);
+  if (body.indexOf('On-site') === -1) return body;
+  const site = evIsoDate(ev.date);
+  if (!site || dateKey(today0()) <= site) return body;
+  const lines = body.split('\n').filter(l => !/^\s*On-site\b/.test(l));
+  return lines.join('\n') || body;   // never render an empty body
+}
 function evIsNew(ev) {
   const t = Date.parse(ev.created);
   return !isNaN(t) && Date.now() - t < 48 * 3600 * 1000 && Date.now() - t > -3600 * 1000;
@@ -2169,7 +2181,7 @@ function buildEventsPanel() {
         <div class="ph-card-body">
           <div class="ev-main">
             <div class="ev-title">${dateChip}${evEsc(ev.title || '')}${pr === 'urgent' ? '<span class="ev-chip ev-chip-urgent">Urgent</span>' : ''}${evIsNew(ev) ? '<span class="ev-chip ev-chip-new">New</span>' : ''}</div>
-            ${ev.body ? `<div class="ev-body">${evEsc(ev.body)}</div>` : ''}
+            ${ev.body ? `<div class="ev-body">${evEsc(evBodyLive(ev))}</div>` : ''}
             <div class="ev-foot">${evEsc(ev.posted_by || 'Omuhle')}${posted}${teamChip}</div>
           </div>
           <div class="ev-icon" style="background:${col}1f">${evIconSvg(ev, col)}</div>
